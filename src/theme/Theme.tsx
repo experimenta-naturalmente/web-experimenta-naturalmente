@@ -8,6 +8,7 @@ declare module '@mui/material/styles' {
     400?: string;
     500?: string;
     600?: string;
+    700?: string;
   }
 
   interface SimplePaletteColorOptions {
@@ -31,19 +32,23 @@ declare module '@mui/material/styles' {
       baseBlack?: string;
     };
   }
+
   interface Typography {
     smallButton: React.CSSProperties;
     mediumButton?: React.CSSProperties;
+    body3?: React.CSSProperties;
   }
 
   interface TypographyVariantsOptions {
     smallButton: React.CSSProperties;
     mediumButton: React.CSSProperties;
+    body3: React.CSSProperties;
   }
 
   interface TypographyVariants {
     smallButton: React.CSSProperties;
     mediumButton: React.CSSProperties;
+    body3: React.CSSProperties;
   }
 }
 
@@ -51,6 +56,14 @@ declare module '@mui/material/Button' {
   interface ButtonPropsVariantOverrides {
     navigation: true;
     cta: true;
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    body3: true;
+    smallButton: true;
+    mediumButton: true;
   }
 }
 
@@ -77,20 +90,20 @@ const theme = createTheme({
     neutrals: {
       baseWhite: "#FFFFFF",
       lightGrey: "#F5F5F5",
-      darkGrey: "#B0B0B0",
-      baseBlack: "#000000",
+      darkGrey: "#6B6363",
+      baseBlack: "#474242",
     },
   },
   typography: {
     h1: {
       fontFamily: "'Rasa', serif",
       fontWeight: 700,
-      fontSize: "2.5rem",
+      fontSize: "3rem",
     },
     h2: {
       fontFamily: "'Rasa', serif",
       fontWeight: 500,
-      fontSize: "2.2rem",
+      fontSize: "2.5rem",
     },
     h3: {
       fontFamily: "'Rasa', serif",
@@ -103,6 +116,11 @@ const theme = createTheme({
       fontSize: "1.5rem",
     },
     body2: {
+      fontFamily: "Roboto, sans-serif",
+      fontWeight: 100,
+      fontSize: "1.2rem",
+    },
+    body3: {
       fontFamily: "Roboto, sans-serif",
       fontWeight: 100,
       fontSize: "0.9rem",
