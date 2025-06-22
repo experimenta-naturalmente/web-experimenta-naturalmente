@@ -12,7 +12,7 @@ const poppins = Poppins({ subsets: ['latin'], weight: ['300', '400', '500', '600
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-     <html lang="pt-BR">
+    <html lang="pt-BR">
       <head />
       <body className={`${rasa.className} ${poppins.className}`}>
         <QueryClientProvider client={queryClient}>
