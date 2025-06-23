@@ -46,7 +46,6 @@ export const AppCard = ({ variant, Icon, title, text }: IProps) => {
       </Typography>
       <Typography
         sx={{ textAlign: 'center' }}
-        variant="body3"
         color={
           variant === 'light' || variant === 'lightNormal'
             ? theme.palette.neutrals.baseBlack
