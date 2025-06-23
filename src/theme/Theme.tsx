@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
-  interface PaletteColor {
+  interface CustomPaletteColor {
     100?: string;
     200?: string;
     300?: string;
@@ -12,6 +12,8 @@ declare module '@mui/material/styles' {
   }
 
   interface Palette {
+    customPrimaryShades: CustomPaletteColor;
+    customSecondaryShades: CustomPaletteColor;
     neutrals: {
       baseWhite: string;
       lightGrey: string;
@@ -21,6 +23,8 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
+    customPrimaryShades?: CustomPaletteColor;
+    customSecondaryShades?: CustomPaletteColor;
     neutrals?: {
       baseWhite?: string;
       lightGrey?: string;
@@ -28,6 +32,7 @@ declare module '@mui/material/styles' {
       baseBlack?: string;
     };
   }
+
   interface Typography {
     smallButton: React.CSSProperties;
     mediumButton?: React.CSSProperties;
@@ -55,6 +60,11 @@ const theme = createTheme({
   palette: {
     primary: {
       main: '#B0D182',
+    },
+    secondary: {
+      main: '#78B7AB',
+    },
+    customPrimaryShades: {
       100: '#F9FFF1',
       200: '#DAFFA0',
       300: '#B0D182',
@@ -63,8 +73,7 @@ const theme = createTheme({
       600: '#4D5B45',
       700: '#3A502C',
     },
-    secondary: {
-      main: '#78B7AB',
+    customSecondaryShades: {
       100: '#D2E8E4',
       200: '#9BD8CD',
       300: '#78B7AB',

@@ -10,7 +10,7 @@ export default function Home() {
         display: 'flex',
         height: 'fit-content',
         width: '100vw',
-        backgroundColor: theme.palette.primary[100],
+        backgroundColor: theme.palette.customPrimaryShades[100],
       }}
     >
       <LandingPage />

@@ -31,7 +31,7 @@ export const AppDescription = () => {
         </Stack>
         <Stack gap={'1.5rem'} alignItems={'center'} width={'28%'} height={'75%'}>
           <Box height={'10%'} />
-          <Typography variant="h1" color={theme.palette.primary[600]}>
+          <Typography variant="h1" color={theme.palette.customPrimaryShades[600]}>
             Baixe o App
           </Typography>
           <Stack
