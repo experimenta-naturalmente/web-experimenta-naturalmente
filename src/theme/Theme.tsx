@@ -83,20 +83,20 @@ const theme = createTheme({
     neutrals: {
       baseWhite: '#FFFFFF',
       lightGrey: '#F5F5F5',
-      darkGrey: '#B0B0B0',
-      baseBlack: '#000000',
+      darkGrey: '#6B6363',
+      baseBlack: '#474242',
     },
   },
   typography: {
     h1: {
       fontFamily: "'Rasa', serif",
       fontWeight: 700,
-      fontSize: '2.5rem',
+      fontSize: '4rem',
     },
     h2: {
       fontFamily: "'Rasa', serif",
       fontWeight: 500,
-      fontSize: '2.2rem',
+      fontSize: '2.5rem',
     },
     h3: {
       fontFamily: "'Rasa', serif",
@@ -111,19 +111,19 @@ const theme = createTheme({
     body2: {
       fontFamily: 'Roboto, sans-serif',
       fontWeight: 100,
-      fontSize: '0.9rem',
+      fontSize: '1.2rem',
     },
 
     smallButton: {
       fontFamily: 'Roboto, sans-serif',
       fontWeight: 500,
-      fontSize: '0.9rem',
+      fontSize: '1.2rem',
       textTransform: 'none',
     },
     mediumButton: {
       fontFamily: 'Poppins, sans-serif',
       fontWeight: 600,
-      fontSize: '1rem',
+      fontSize: '1.2rem',
       textTransform: 'none',
     },
   },
