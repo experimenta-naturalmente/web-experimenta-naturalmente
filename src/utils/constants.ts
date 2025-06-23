@@ -1,0 +1,4 @@
+export const projectDescription = `O projeto do Experimenta São Chico Naturalmente em São Francisco de Paula começou a ser desenvolvido em 2024 como parte de um projeto implementado na AGES (Agência Experimental de Engenharia de Software), uma disciplina prática da Pontifícia Universidade Católica do Rio Grande do Sul. A proposta foi trazida pelos professores Augusto Mussi Alvim e Maurício Schaidhauer, da Escola de Negócios, com foco em valorizar o turismo rural em São Francisco de Paula (RS).
+O projeto reuniu estudantes de Engenharia de Software para criar uma plataforma que conecta agricultores familiares, turistas e estabelecimentos locais. O aplicativo tem como principal objetivo divulgar produtos e serviços rurais, como hospedagens, gastronomia, atrações turísticas e roteiros, promovendo experiências autênticas e sustentáveis.
+
+Posteriormente, o trabalho evoluiu e hoje integra uma pesquisa de iniciação científica.`;

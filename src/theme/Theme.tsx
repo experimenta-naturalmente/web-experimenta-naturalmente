@@ -98,7 +98,7 @@ const theme = createTheme({
     h1: {
       fontFamily: "'Rasa', serif",
       fontWeight: 700,
-      fontSize: '3rem',
+      fontSize: '3.5rem',
     },
     h2: {
       fontFamily: "'Rasa', serif",
@@ -118,7 +118,7 @@ const theme = createTheme({
     body2: {
       fontFamily: 'Roboto, sans-serif',
       fontWeight: 100,
-      fontSize: '1.2rem',
+      fontSize: '1.3rem',
     },
     body3: {
       fontFamily: 'Roboto, sans-serif',

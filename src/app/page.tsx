@@ -9,7 +9,7 @@ export default function Home() {
       sx={{
         display: 'flex',
         height: 'fit-content',
-        width: '100%',
+        width: '100vw',
         backgroundColor: theme.palette.primary[100],
       }}
     >
