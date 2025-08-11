@@ -4,8 +4,11 @@ import { NavigationButton } from './NavigationButton/NavigationButton';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import Logo from '../../assets/ESCNLogo.svg';
 import { ColoredRoundButton, LightRoundButton } from '../UI/Buttons/RoundButton.style';
+import Link from 'next/link';
 
-export const TopBar = () => {
+type TopBarProps = { isRegister?: boolean };
+
+export const TopBar = ({ isRegister = false }: TopBarProps) => {
   return (
     <TopBarContainer>
       <Logo style={{ height: '5rem', width: '10rem' }} />
@@ -16,16 +19,20 @@ export const TopBar = () => {
         }}
       >
         <ButtonGroup sx={{ gap: '1rem' }}>
-          <NavigationButton label="Home" />
-          <NavigationButton label="Projeto" />
-          <NavigationButton label="Baixe o App" />
-          <NavigationButton label="Contato" />
+          <NavigationButton label="Home" href="/" />
+          <NavigationButton label="Projeto" href="/projeto" />
+          <NavigationButton label="Baixe o App" href="/download" />
+          <NavigationButton label="Contato" href="/contato" />
         </ButtonGroup>
         <LightRoundButton>Entrar</LightRoundButton>
-        <ColoredRoundButton>
-          Cadastrar
-          <ArrowOutwardIcon sx={{ height: '1.1rem' }} />
-        </ColoredRoundButton>
+        {!isRegister && (
+          <Link href="/register" style={{ textDecoration: 'none' }}>
+            <ColoredRoundButton>
+              Cadastrar
+              <ArrowOutwardIcon sx={{ height: '1.1rem' }} />
+            </ColoredRoundButton>
+          </Link>
+        )}
       </Box>
     </TopBarContainer>
   );
