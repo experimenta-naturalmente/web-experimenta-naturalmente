@@ -50,7 +50,7 @@ export const Register = () => {
           <div
             style={{
               display: 'flex',
-              backgroundColor: '#fff9f1',
+              backgroundColor: theme.palette.neutrals.formsWhite,
               alignItems: 'center',
               flexDirection: 'column',
               padding: '1rem',
@@ -89,7 +89,7 @@ export const Register = () => {
                   alignItems: 'center',
                 }}
               >
-                <Typography variant="h6" color={'#A2B787'}>
+                <Typography variant="h6" color={theme.palette.primary[400]}>
                   Dados da conta
                 </Typography>
                 <Typography variant="h6" color={theme.palette.neutrals.darkGrey}>
@@ -147,7 +147,7 @@ export const Register = () => {
           <div
             style={{
               display: 'flex',
-              backgroundColor: '#fff9f1',
+              backgroundColor: theme.palette.neutrals.formsWhite,
               alignItems: 'center',
               flexDirection: 'column',
               padding: '1rem',
@@ -184,7 +184,7 @@ export const Register = () => {
                 <Typography variant="h6" color={theme.palette.neutrals.darkGrey}>
                   Dados da conta
                 </Typography>
-                <Typography variant="h6" color={'#A2B787'}>
+                <Typography variant="h6" color={theme.palette.primary[400]}>
                   Dados do estabelecimento
                 </Typography>
               </Stack>
@@ -197,8 +197,8 @@ export const Register = () => {
                         control={
                           <Radio
                             sx={{
-                              color: '#A8A49F',
-                              '&.Mui-checked': { color: '#3A502C' },
+                              color: theme.palette.neutrals.mediumGrey,
+                              '&.Mui-checked': { color: theme.palette.primary[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -207,7 +207,7 @@ export const Register = () => {
                         sx={{
                           '.MuiTypography-root': {
                             fontSize: '0.95rem',
-                            color: '#A8A49F',
+                            color: theme.palette.neutrals.mediumGrey,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -221,8 +221,8 @@ export const Register = () => {
                         control={
                           <Radio
                             sx={{
-                              color: '#A8A49F',
-                              '&.Mui-checked': { color: '#3A502C' },
+                              color: theme.palette.neutrals.mediumGrey,
+                              '&.Mui-checked': { color: theme.palette.primary[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -231,7 +231,7 @@ export const Register = () => {
                         sx={{
                           '.MuiTypography-root': {
                             fontSize: '0.95rem',
-                            color: '#A8A49F',
+                            color: theme.palette.neutrals.mediumGrey,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -245,8 +245,8 @@ export const Register = () => {
                         control={
                           <Radio
                             sx={{
-                              color: '#A8A49F',
-                              '&.Mui-checked': { color: '#3A502C' },
+                              color: theme.palette.neutrals.mediumGrey,
+                              '&.Mui-checked': { color: theme.palette.primary[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -255,7 +255,7 @@ export const Register = () => {
                         sx={{
                           '.MuiTypography-root': {
                             fontSize: '0.95rem',
-                            color: '#A8A49F',
+                            color: theme.palette.neutrals.mediumGrey,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -265,19 +265,14 @@ export const Register = () => {
                         }}
                       />
                     </Stack>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      justifyContent="center"
-                      flexWrap="nowrap"
-                    >
+                    <Stack direction="row" spacing={1} justifyContent="center" flexWrap="nowrap">
                       <FormControlLabel
                         value="evento"
                         control={
                           <Radio
                             sx={{
-                              color: '#A8A49F',
-                              '&.Mui-checked': { color: '#3A502C' },
+                              color: theme.palette.neutrals.mediumGrey,
+                              '&.Mui-checked': { color: theme.palette.primary[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -286,7 +281,7 @@ export const Register = () => {
                         sx={{
                           '.MuiTypography-root': {
                             fontSize: '0.95rem',
-                            color: '#A8A49F',
+                            color: theme.palette.neutrals.mediumGrey,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -300,8 +295,8 @@ export const Register = () => {
                         control={
                           <Radio
                             sx={{
-                              color: '#A8A49F',
-                              '&.Mui-checked': { color: '#3A502C' },
+                              color: theme.palette.neutrals.mediumGrey,
+                              '&.Mui-checked': { color: theme.palette.primary[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -310,7 +305,7 @@ export const Register = () => {
                         sx={{
                           '.MuiTypography-root': {
                             fontSize: '0.95rem',
-                            color: '#A8A49F',
+                            color: theme.palette.neutrals.mediumGrey,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',

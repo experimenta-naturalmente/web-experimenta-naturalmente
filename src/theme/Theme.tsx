@@ -18,7 +18,9 @@ declare module '@mui/material/styles' {
   interface Palette {
     neutrals: {
       baseWhite: string;
+      formsWhite: string;
       lightGrey: string;
+      mediumGrey: string;
       darkGrey: string;
       baseBlack: string;
     };
@@ -27,7 +29,9 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     neutrals?: {
       baseWhite?: string;
+      formsWhite?: string;
       lightGrey?: string;
+      mediumGrey?: string;
       darkGrey?: string;
       baseBlack?: string;
     };
@@ -89,7 +93,9 @@ const theme = createTheme({
     },
     neutrals: {
       baseWhite: '#FFFFFF',
+      formsWhite: '#fff9f1',
       lightGrey: '#F5F5F5',
+      mediumGrey: '#A8A49F',
       darkGrey: '#6B6363',
       baseBlack: '#474242',
     },

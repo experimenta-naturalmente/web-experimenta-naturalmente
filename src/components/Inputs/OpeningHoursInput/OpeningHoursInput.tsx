@@ -7,13 +7,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import {
+  GradientReverseRoundButton,
+  GradientRoundButton,
+} from '@/components/UI/Buttons/RoundButton.style';
+import { useTheme } from '@mui/material';
 
 export type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 
@@ -42,7 +44,7 @@ const emptyHours = (): OpeningHours => ({
   thu: { open: '09:00', close: '17:00', closed: false },
   fri: { open: '09:00', close: '17:00', closed: false },
   sat: { open: '09:00', close: '13:00', closed: false },
-  sun: { open: '00:00', close: '00:00', closed: true },
+  sun: { open: '00:00', close: '00:00', closed: false },
 });
 
 interface Props {
@@ -56,6 +58,7 @@ export default function OpeningHoursInput({
   onChange,
   label = 'Horário de funcionamento',
 }: Props) {
+  const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [state, setState] = React.useState<OpeningHours>(value ?? emptyHours());
 
@@ -111,57 +114,111 @@ export default function OpeningHoursInput({
       </Box>
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Horário de funcionamento</DialogTitle>
-        <DialogContent>
+        <DialogTitle sx={{ fontSize: '1.6rem' }}>Horário de funcionamento</DialogTitle>
+        <DialogContent sx={{ fontSize: '1.2rem' }}>
           <Stack spacing={2} mt={1}>
             {DAY_ORDER.map((d) => {
               const day = d.key;
               const info = state[day];
               return (
-                <Box key={day} display="flex" alignItems="center" gap={2}>
+                <Box
+                  key={day}
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  sx={{ fontSize: '1.2rem' }}
+                >
                   <Box sx={{ width: 120 }}>
-                    <Typography>{d.label}</Typography>
+                    <Typography sx={{ fontSize: '1.2rem' }}>{d.label}</Typography>
                   </Box>
                   <FormControlLabel
                     control={
                       <Checkbox
                         checked={!!info.closed}
                         onChange={(e) => handleDayChange(day, 'closed', e.target.checked)}
+                        sx={{ fontSize: '1rem' }}
                       />
                     }
-                    label="Fechado"
-                    sx={{ mr: 2 }}
+                    label={<span style={{ fontSize: '1rem' }}>Fechado</span>}
+                    sx={{ mr: 2, fontSize: '1rem' }}
                   />
                   <TextField
                     label="Abertura"
                     type="time"
                     value={info.open ?? ''}
                     onChange={(e) => handleDayChange(day, 'open', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{ step: 300 }}
+                    InputLabelProps={{ shrink: true, sx: { fontSize: '1.2rem' } }}
+                    inputProps={{
+                      step: 300,
+                      style: {
+                        fontSize: '1.2rem',
+                        height: '1rem',
+                        padding: '16px 8px 4px 8px',
+                      },
+                    }}
                     disabled={!!info.closed}
-                    sx={{ width: 150 }}
+                    sx={{
+                      width: 150,
+                      fontSize: '1rem',
+                      '& .MuiInputBase-root:hover': {
+                        borderColor: theme.palette.success.main,
+                      },
+                      '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: theme.palette.success.main,
+                      },
+                    }}
                   />
                   <TextField
                     label="Fechamento"
                     type="time"
                     value={info.close ?? ''}
                     onChange={(e) => handleDayChange(day, 'close', e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{ step: 300 }}
+                    InputLabelProps={{ shrink: true, sx: { fontSize: '1.2rem' } }}
+                    inputProps={{
+                      step: 300,
+                      style: {
+                        fontSize: '1.2rem',
+                        height: '1rem',
+                        padding: '16px 8px 4px 8px',
+                      },
+                    }}
                     disabled={!!info.closed}
-                    sx={{ width: 150 }}
+                    sx={{
+                      width: 150,
+                      fontSize: '1rem',
+                      '& .MuiInputBase-root:hover': {
+                        borderColor: theme.palette.success.main,
+                      },
+                      '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: theme.palette.success.main,
+                      },
+                    }}
                   />
                 </Box>
               );
             })}
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSave} variant="contained">
+        <DialogActions sx={{ fontSize: '1rem' }}>
+          <GradientReverseRoundButton
+            onClick={() => setOpen(false)}
+            sx={{
+              fontSize: '1rem',
+            }}
+          >
+            Cancelar
+          </GradientReverseRoundButton>
+          <GradientRoundButton
+            sx={{
+              width: '15rem',
+              height: '2.5rem',
+              fontWeight: 500,
+              fontSize: '1rem',
+            }}
+            onClick={handleSave}
+          >
             Salvar
-          </Button>
+          </GradientRoundButton>
         </DialogActions>
       </Dialog>
     </>
