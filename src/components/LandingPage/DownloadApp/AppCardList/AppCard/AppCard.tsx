@@ -24,20 +24,20 @@ export const AppCard = ({ variant, Icon, title, text }: IProps) => {
         margin: '0',
         backgroundColor:
           variant === 'light'
-            ? theme.palette.primary[200]
+            ? theme.palette.customPrimaryShades[200]
             : variant === 'lightNormal'
-              ? theme.palette.primary[300]
+              ? theme.palette.customPrimaryShades[300]
               : variant === 'darkNormal'
-                ? theme.palette.primary[500]
-                : theme.palette.primary[700],
+                ? theme.palette.customPrimaryShades[500]
+                : theme.palette.customPrimaryShades[700],
         color:
           variant === 'light'
-            ? theme.palette.primary[500]
+            ? theme.palette.customPrimaryShades[500]
             : variant === 'lightNormal'
-              ? theme.palette.primary[700]
+              ? theme.palette.customPrimaryShades[700]
               : variant === 'darkNormal'
-                ? theme.palette.primary[200]
-                : theme.palette.primary[300],
+                ? theme.palette.customPrimaryShades[200]
+                : theme.palette.customPrimaryShades[300],
       }}
     >
       <Icon sx={{ fontSize: '4rem' }} />
@@ -45,8 +45,9 @@ export const AppCard = ({ variant, Icon, title, text }: IProps) => {
         {title}
       </Typography>
       <Typography
+        variant="body2"
+        fontSize={'1rem'}
         sx={{ textAlign: 'center' }}
-        variant="body3"
         color={
           variant === 'light' || variant === 'lightNormal'
             ? theme.palette.neutrals.baseBlack

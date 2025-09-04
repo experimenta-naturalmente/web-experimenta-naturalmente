@@ -19,7 +19,7 @@ export const Login = () => {
     >
       <TopBar />
       <Stack width={'45%'} height={'90%'} gap={'1.5rem'} justifyContent={'center'}>
-        <Typography variant="h3" color={theme.palette.neutrals.baseWhite}>
+        <Typography variant="h2" color={theme.palette.neutrals.baseWhite}>
           Cadastre-se agora e comece a divulgar o seu negócio.
         </Typography>
         <Stack width={'60%'} gap={'1rem'}>
@@ -29,10 +29,10 @@ export const Login = () => {
           </Typography>
           <GradientRoundButton
             sx={{
-              width: '15rem',
-              height: '2.5rem',
+              width: '50%',
+              height: '10%rem',
               fontWeight: 500,
-              fontSize: '0.9rem',
+              fontSize: '1.2rem',
             }}
           >
             Baixe o App

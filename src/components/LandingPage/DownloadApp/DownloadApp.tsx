@@ -26,7 +26,7 @@ export const DownloadApp = () => {
               >
                 <Typography
                   variant="body2"
-                  color={theme.palette.primary[300]}
+                  color={theme.palette.customPrimaryShades[300]}
                   fontWeight={700}
                   sx={{
                     textDecoration: 'underline',
