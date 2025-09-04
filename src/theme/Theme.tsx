@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
-  interface CustomPaletteColor {
+  interface PaletteColor {
     100?: string;
     200?: string;
     300?: string;
@@ -11,9 +11,11 @@ declare module '@mui/material/styles' {
     700?: string;
   }
 
+  interface SimplePaletteColorOptions {
+    darker?: string;
+  }
+
   interface Palette {
-    customPrimaryShades: CustomPaletteColor;
-    customSecondaryShades: CustomPaletteColor;
     neutrals: {
       baseWhite: string;
       formsWhite: string;
@@ -25,8 +27,6 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
-    customPrimaryShades?: CustomPaletteColor;
-    customSecondaryShades?: CustomPaletteColor;
     neutrals?: {
       baseWhite?: string;
       formsWhite?: string;
@@ -40,16 +40,19 @@ declare module '@mui/material/styles' {
   interface Typography {
     smallButton: React.CSSProperties;
     mediumButton?: React.CSSProperties;
+    body3?: React.CSSProperties;
   }
 
   interface TypographyVariantsOptions {
     smallButton: React.CSSProperties;
     mediumButton: React.CSSProperties;
+    body3: React.CSSProperties;
   }
 
   interface TypographyVariants {
     smallButton: React.CSSProperties;
     mediumButton: React.CSSProperties;
+    body3: React.CSSProperties;
   }
 }
 
@@ -60,15 +63,18 @@ declare module '@mui/material/Button' {
   }
 }
 
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    body3: true;
+    smallButton: true;
+    mediumButton: true;
+  }
+}
+
 const theme = createTheme({
   palette: {
     primary: {
       main: '#B0D182',
-    },
-    secondary: {
-      main: '#78B7AB',
-    },
-    customPrimaryShades: {
       100: '#F9FFF1',
       200: '#DAFFA0',
       300: '#B0D182',
@@ -77,7 +83,8 @@ const theme = createTheme({
       600: '#4D5B45',
       700: '#3A502C',
     },
-    customSecondaryShades: {
+    secondary: {
+      main: '#78B7AB',
       100: '#D2E8E4',
       200: '#9BD8CD',
       300: '#78B7AB',
@@ -97,7 +104,7 @@ const theme = createTheme({
     h1: {
       fontFamily: "'Rasa', serif",
       fontWeight: 700,
-      fontSize: '4rem',
+      fontSize: '3.5rem',
     },
     h2: {
       fontFamily: "'Rasa', serif",
@@ -117,19 +124,24 @@ const theme = createTheme({
     body2: {
       fontFamily: 'Roboto, sans-serif',
       fontWeight: 100,
-      fontSize: '1.2rem',
+      fontSize: '1.3rem',
+    },
+    body3: {
+      fontFamily: 'Roboto, sans-serif',
+      fontWeight: 100,
+      fontSize: '0.9rem',
     },
 
     smallButton: {
       fontFamily: 'Roboto, sans-serif',
       fontWeight: 500,
-      fontSize: '1.2rem',
+      fontSize: '0.9rem',
       textTransform: 'none',
     },
     mediumButton: {
       fontFamily: 'Poppins, sans-serif',
       fontWeight: 600,
-      fontSize: '1.2rem',
+      fontSize: '1rem',
       textTransform: 'none',
     },
   },
