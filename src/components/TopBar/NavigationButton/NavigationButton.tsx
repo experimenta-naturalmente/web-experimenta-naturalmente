@@ -21,7 +21,7 @@ export const NavigationButton = ({ label, href }: IProps) => {
         disableRipple
         sx={(theme) => ({
           ...(active && {
-            color: theme.palette.primary[300],
+            color: theme.palette.customPrimaryShades[300],
             fontWeight: 600,
           }),
           textTransform: 'none',

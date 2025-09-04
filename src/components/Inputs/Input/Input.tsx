@@ -38,7 +38,7 @@ export default function Input({ icon, placeholder, type = 'text', onChange }: In
           background: 'transparent',
           '& input': { padding: 0 },
           fontSize: '1rem',
-          color: 'rgb(165 163 157)'
+          color: 'rgb(165 163 157)',
         }}
       />
     </Box>

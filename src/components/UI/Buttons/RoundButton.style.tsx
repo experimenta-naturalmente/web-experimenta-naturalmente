@@ -26,7 +26,7 @@ export const GradientRoundButton = styled(Button)(({ theme }) => ({
 
 export const GradientReverseRoundButton = styled(Button)(({ theme }) => ({
   border: 'none',
-  color: theme.palette.primary[400],
+  color: theme.palette.customPrimaryShades[400],
   backgroundColor: theme.palette.neutrals.baseWhite,
   ...theme.typography.mediumButton,
   borderRadius: '10rem',

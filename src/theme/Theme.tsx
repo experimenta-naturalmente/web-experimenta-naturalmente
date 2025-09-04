@@ -95,6 +95,22 @@ const theme = createTheme({
       400: '#378072',
       500: '#185348',
     },
+    customPrimaryShades: {
+      100: '#F9FFF1',
+      200: '#DAFFA0',
+      300: '#B0D182',
+      400: '#8DA86E',
+      500: '#637757',
+      600: '#4D5B45',
+      700: '#3A502C',
+    },
+    customSecondaryShades: {
+      100: '#D2E8E4',
+      200: '#9BD8CD',
+      300: '#78B7AB',
+      400: '#378072',
+      500: '#185348',
+    },
     neutrals: {
       baseWhite: '#FFFFFF',
       formsWhite: '#fff9f1',

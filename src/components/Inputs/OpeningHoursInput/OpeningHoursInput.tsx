@@ -79,7 +79,7 @@ export default function OpeningHoursInput({
     setOpen(false);
   };
 
-  const summary = React.useMemo(() => {
+  React.useMemo(() => {
     const openDays = DAY_ORDER.filter((d) => !state[d.key].closed);
     if (openDays.length === 0) return 'Fechado';
     const first = openDays[0];

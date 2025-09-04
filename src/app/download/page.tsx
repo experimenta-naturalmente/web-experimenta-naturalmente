@@ -6,7 +6,13 @@ import { DownloadApp } from '@/components/LandingPage/DownloadApp/DownloadApp';
 export default function DownloadPage() {
   const theme = useTheme();
   return (
-    <Box sx={{ width: '100vw', minHeight: '100vh', backgroundColor: theme.palette.primary[100] }}>
+    <Box
+      sx={{
+        width: '100vw',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.customPrimaryShades[100],
+      }}
+    >
       <TopBar />
       <DownloadApp />
     </Box>

@@ -13,7 +13,7 @@ import backgroundImg from '@/assets/BackgroundRegister.png';
 import personIcon from '@/assets/PersonIcon.png';
 import mailIcon from '@/assets/MailIcon.png';
 import phoneIcon from '@/assets/PhoneIcon.png';
-import socialIcon from '@/assets/SocialIcon.png';
+// import socialIcon from '@/assets/SocialIcon.png';
 import lockIcon from '@/assets/LockIcon.png';
 import arrowIcon from '@/assets/ArrowIcon.png';
 import bussinessIcon from '@/assets/BussinessIcon.png';
@@ -89,7 +89,7 @@ export const Register = () => {
         const snap = await getDocs(collection(db, 'experienceCategories'));
         const cats: { id: string; name: string }[] = [];
         snap.docs.forEach((doc) => {
-          const data = doc.data() as any;
+          const data = doc.data();
           cats.push({ id: doc.id, name: data.name ?? data.title ?? doc.id });
         });
         console.log('Loaded categories: ', cats);
@@ -144,8 +144,12 @@ export const Register = () => {
       setCreatedUserId(userDoc.userId);
       showToast('Usuário criado com sucesso', 'success');
       setStep(2);
-    } catch (e: any) {
-      const msg = e?.message ?? 'Falha ao criar usuário';
+    } catch (e) {
+      const errorMessage =
+        typeof e === 'object' && e !== null && 'message' in e
+          ? (e as { message?: string }).message
+          : undefined;
+      const msg = errorMessage ?? 'Falha ao criar usuário';
       setError(msg);
       showToast(msg, 'error');
     }
@@ -219,8 +223,12 @@ export const Register = () => {
       console.log('Created experience id: ', expId);
       showToast('Experiência criada com sucesso!', 'success');
       setTimeout(() => router.push('/'), 800);
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
+    } catch (e) {
+      setError(
+        typeof e === 'object' && e !== null && 'message' in e
+          ? ((e as { message?: string }).message ?? String(e))
+          : String(e),
+      );
     } finally {
       setLoading(false);
     }
@@ -385,7 +393,7 @@ export const Register = () => {
                           <Radio
                             sx={{
                               color: theme.palette.neutrals.mediumGrey,
-                              '&.Mui-checked': { color: theme.palette.primary[700] },
+                              '&.Mui-checked': { color: theme.palette.customPrimaryShades[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -414,7 +422,7 @@ export const Register = () => {
                           <Radio
                             sx={{
                               color: theme.palette.neutrals.mediumGrey,
-                              '&.Mui-checked': { color: theme.palette.primary[700] },
+                              '&.Mui-checked': { color: theme.palette.customPrimaryShades[700] },
                               transform: 'scale(0.85)',
                             }}
                           />
@@ -515,7 +523,7 @@ export const Register = () => {
                   height={20}
                   onClick={() => setStep(2)}
                 />
-                <Typography variant="h6" color={theme.palette.primary[400]}>
+                <Typography variant="h6" color={theme.palette.customPrimaryShades[400]}>
                   3/3 dados da experiencia
                 </Typography>
               </Stack>

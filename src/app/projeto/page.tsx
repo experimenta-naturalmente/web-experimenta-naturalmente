@@ -6,7 +6,13 @@ import { Project } from '@/components/LandingPage/Project/Project';
 export default function ProjetoPage() {
   const theme = useTheme();
   return (
-    <Box sx={{ width: '100vw', minHeight: '100vh', backgroundColor: theme.palette.primary[100] }}>
+    <Box
+      sx={{
+        width: '100vw',
+        minHeight: '100vh',
+        backgroundColor: theme.palette.customPrimaryShades[100],
+      }}
+    >
       <TopBar />
       <Project />
     </Box>

@@ -1,16 +1,6 @@
 import { auth, db } from '@/lib/firebase';
-import {
-  createUserWithEmailAndPassword,
-  deleteUser,
-  User as FirebaseUser,
-} from 'firebase/auth';
-import {
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  setDoc,
-} from 'firebase/firestore';
+import { createUserWithEmailAndPassword, deleteUser, User as FirebaseUser } from 'firebase/auth';
+import { addDoc, collection, doc, FieldValue, serverTimestamp, setDoc } from 'firebase/firestore';
 
 export type Attachment = { type: string; url: string };
 
@@ -28,13 +18,12 @@ export type ExperiencePayload = {
   cnpj?: string;
   categoryId?: string;
   ownerId?: string;
-  createdAt?: any;
+  createdAt?: FieldValue;
   phone?: string;
   address?: {
     street?: string;
     number?: number | string;
     zipCode?: string;
-    map?: any;
   };
   attachments?: Attachment[];
   openingHours?: OpeningHourItem[];
@@ -48,7 +37,7 @@ export type UserPayload = {
   displayName?: string;
   cpf?: string;
   phone?: string;
-  createdAt?: any;
+  createdAt?: FieldValue;
 };
 
 export type RegisterAccountResult = {
@@ -86,7 +75,7 @@ export async function registerUser(user: UserPayload): Promise<RegisterAccountRe
     }
 
     return { userId: createdUser.uid };
-  } catch (err: any) {
+  } catch (err) {
     console.error('registerUser error:', err);
     if (createdUser) {
       try {
@@ -97,7 +86,8 @@ export async function registerUser(user: UserPayload): Promise<RegisterAccountRe
         console.warn('Rollback: failed to delete user after experience creation error', delErr);
       }
     }
-    return { userId: '', error: err?.message ?? String(err) };
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return { userId: '', error: errorMessage };
   }
 }
 
