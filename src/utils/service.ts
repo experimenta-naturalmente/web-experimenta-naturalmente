@@ -22,7 +22,7 @@ export type ExperiencePayload = {
   phone?: string;
   address?: {
     street?: string;
-    number?: number | string;
+    number?: number;
     zipCode?: string;
   };
   attachments?: Attachment[];

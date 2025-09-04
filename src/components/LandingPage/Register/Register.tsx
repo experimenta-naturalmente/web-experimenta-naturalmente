@@ -19,7 +19,7 @@ import arrowIcon from '@/assets/ArrowIcon.png';
 import bussinessIcon from '@/assets/BussinessIcon.png';
 import locationIcon from '@/assets/LocationIcon.png';
 import descriptionIcon from '@/assets/DescriptionIcon.png';
-import imagesIcon from '@/assets/ImagesIcon.png';
+// import imagesIcon from '@/assets/ImagesIcon.png';
 import React, { useState, useEffect } from 'react';
 import { TopBar } from '../../TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
@@ -30,6 +30,8 @@ import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/Openin
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import InputTags from '@/components/Inputs/InputTags/InputTags';
+import InputImages from '@/components/Inputs/InputImages/InputImages';
 
 export const Register = () => {
   const theme = useTheme();
@@ -54,8 +56,7 @@ export const Register = () => {
   const [addressStreet, setAddressStreet] = useState('');
   const [addressNumber, setAddressNumber] = useState<string | number>('');
   const [addressZip, setAddressZip] = useState('');
-  const [attachmentsInput, setAttachmentsInput] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
+  // attachments and tags are lifted from child components
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
 
   const [createdUserId, setCreatedUserId] = useState<string | null>(null);
@@ -81,6 +82,108 @@ export const Register = () => {
   // categories
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
+  // Estado para as tags e imagens
+  const [availableTags, setAvailableTags] = useState<{ id: string; name: string }[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
+
+// Carregar tags do banco
+useEffect(() => {
+  async function loadTags() {
+    try {
+      const tagsSnap = await getDocs(collection(db, 'tags'));
+      const tags: { id: string; name: string }[] = [];
+      tagsSnap.docs.forEach((doc) => {
+        const data = doc.data() as any;
+        tags.push({ id: doc.id, name: data.name ?? data.title ?? doc.id });
+      });
+      setAvailableTags(tags);
+    } catch (e) {
+      console.warn('Failed to load tags', e);
+    }
+  }
+  loadTags();
+}, []);
+
+// Função para toggle das tags
+const handleTagToggle = (tagName: string) => {
+  setSelectedTags(prev => 
+    prev.includes(tagName)
+      ? prev.filter(t => t !== tagName)
+      : [...prev, tagName]
+  );
+};
+
+// Função para compressão de imagens
+const compressImageToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    reader.onload = (e) => {
+      img.onload = () => {
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedBase64);
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+// Função para upload de imagens
+const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const files = event.target.files;
+  if (!files) return;
+
+  const newAttachments: { file: File; base64: string; }[] = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Uma imagem excede o limite de 5MB', 'error');
+      continue;
+    }
+    try {
+      const compressedBase64 = await compressImageToBase64(file);
+      newAttachments.push({ file, base64: compressedBase64 });
+    } catch (error) {
+      console.error('Erro ao processar imagem:', error);
+      showToast('Erro ao processar uma das imagens', 'error');
+    }
+  }
+
+  setAttachments(prev => [...prev, ...newAttachments]);
+};
+
+// Função para remover imagem
+const removeImage = (index: number) => {
+  setAttachments(prev => prev.filter((_, i) => i !== index));
+};
 
   useEffect(() => {
     let mounted = true;
@@ -179,11 +282,7 @@ export const Register = () => {
     setLoading(true);
 
     try {
-      const attachments = attachmentsInput
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((url) => ({ type: 'image', url }));
+  const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
 
       const openingHours = openingHoursMap
         ? (Object.entries(openingHoursMap).map(([k, v]) => ({
@@ -194,10 +293,7 @@ export const Register = () => {
           })) as import('@/utils/service').OpeningHourItem[])
         : undefined;
 
-      const tags = tagsInput
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
+      const tags = selectedTags;
       const finalExperience: import('@/utils/service').ExperiencePayload = {
         name: estabName,
         description,
@@ -205,8 +301,8 @@ export const Register = () => {
         phone: estPhone,
         cnpj,
         categoryId: selectedCategoryId,
-        address: { street: addressStreet, number: addressNumber, zipCode: addressZip },
-        attachments: attachments,
+        address: { street: addressStreet, number: +addressNumber, zipCode: addressZip },
+        attachments: attachmentsPayload,
         openingHours,
         tags,
       };
@@ -265,7 +361,7 @@ export const Register = () => {
             }}
           >
             <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
-              Cadastre seu negócio
+              Cadastre seu negócio 1/3
             </Typography>
             <Stack
               width={'60%'}
@@ -288,12 +384,12 @@ export const Register = () => {
                   flexDirection: 'row',
                   alignSelf: 'center',
                   width: '110%',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
                   alignItems: 'center',
                 }}
               >
-                <Typography variant="h6" color={theme.palette.neutrals.darkGrey}>
-                  1/3 Dados da conta
+                <Typography variant="h6" color={theme.palette.customPrimaryShades[400]}>
+                  Dados pessoais
                 </Typography>
               </Stack>
 
@@ -353,8 +449,8 @@ export const Register = () => {
               borderRadius: '1rem',
             }}
           >
-            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
-              Cadastre seu negócio
+            <Typography variant="h3" color={theme.palette.customPrimaryShades[400]} fontWeight={700}>
+              Cadastre seu negócio 2/3
             </Typography>
             <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
               <Stack
@@ -375,7 +471,7 @@ export const Register = () => {
                   onClick={() => setStep(1)}
                 />
                 <Typography variant="h6" color={theme.palette.neutrals.darkGrey}>
-                  2/3 dados da experiencia
+                  Dados da experiencia
                 </Typography>
               </Stack>
 
@@ -502,8 +598,8 @@ export const Register = () => {
               borderRadius: '1rem',
             }}
           >
-            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
-              Cadastre seu negócio
+            <Typography variant="h3" color={theme.palette.customPrimaryShades[400]} fontWeight={700}>
+              Cadastre seu negócio 3/3
             </Typography>
             <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
               <Stack
@@ -537,15 +633,12 @@ export const Register = () => {
                 placeholder="Descrição"
                 onChange={(val) => setDescription(val)}
               />
-              <Input
-                icon={imagesIcon}
-                placeholder="Tags (separadas por ,)"
-                onChange={(val) => setTagsInput(val)}
+              <InputTags
+                availableTags={availableTags}
+                onChange={(tags) => setSelectedTags(tags)}
               />
-              <Input
-                icon={imagesIcon}
-                placeholder="Fotos (URLs separadas por ,)"
-                onChange={(val) => setAttachmentsInput(val)}
+              <InputImages
+                onChange={(atts) => setAttachments(atts)}
               />
 
               {error && (
