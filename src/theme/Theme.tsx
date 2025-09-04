@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
-  interface PaletteColor {
+  interface CustomPaletteColor {
     100?: string;
     200?: string;
     300?: string;
@@ -16,6 +16,8 @@ declare module '@mui/material/styles' {
   }
 
   interface Palette {
+    customPrimaryShades: CustomPaletteColor;
+    customSecondaryShades: CustomPaletteColor;
     neutrals: {
       baseWhite: string;
       formsWhite: string;
@@ -27,6 +29,8 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
+    customPrimaryShades?: CustomPaletteColor;
+    customSecondaryShades?: CustomPaletteColor;
     neutrals?: {
       baseWhite?: string;
       formsWhite?: string;
