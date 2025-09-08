@@ -25,7 +25,7 @@ import { TopBar } from '../../TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
 import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
-import { registerUser, createExperienceOnly } from '@/utils/service';
+import { createExperienceOnly, registerUser } from '@/utils/service';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -83,107 +83,72 @@ export const Register = () => {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
   // Estado para as tags e imagens
-  const [availableTags, setAvailableTags] = useState<{ id: string; name: string }[]>([]);
+  const [availableTags, setAvailableTags] = useState<
+    { id: string; name: string; experienceCategories: string[] }[]
+  >([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
 
-// Carregar tags do banco
-useEffect(() => {
-  async function loadTags() {
-    try {
-      const tagsSnap = await getDocs(collection(db, 'tags'));
-      const tags: { id: string; name: string }[] = [];
-      tagsSnap.docs.forEach((doc) => {
-        const data = doc.data() as any;
-        tags.push({ id: doc.id, name: data.name ?? data.title ?? doc.id });
-      });
-      setAvailableTags(tags);
-    } catch (e) {
-      console.warn('Failed to load tags', e);
+  // Carregar tags do banco
+  useEffect(() => {
+    async function loadTags() {
+      try {
+        const tagsSnap = await getDocs(collection(db, 'tags'));
+        const tags: { id: string; name: string; experienceCategories: string[] }[] = [];
+        tagsSnap.docs.forEach((doc) => {
+          const data = doc.data() as any;
+          tags.push({
+            id: doc.id,
+            name: data.name ?? data.title ?? doc.id,
+            experienceCategories: data.experienceCategories ?? [],
+          });
+        });
+        setAvailableTags(tags);
+      } catch (e) {
+        console.warn('Failed to load tags', e);
+      }
     }
-  }
-  loadTags();
-}, []);
+    loadTags();
+  }, []);
 
-// Função para toggle das tags
-const handleTagToggle = (tagName: string) => {
-  setSelectedTags(prev => 
-    prev.includes(tagName)
-      ? prev.filter(t => t !== tagName)
-      : [...prev, tagName]
-  );
-};
+  // Função para toggle das tags
+  // const handleTagToggle = (tagName: string) => {
+  //   setSelectedTags((prev) =>
+  //     prev.includes(tagName) ? prev.filter((t) => t !== tagName) : [...prev, tagName],
+  //   );
+  // };
 
-// Função para compressão de imagens
-const compressImageToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+  // Função para compressão de imagens
+  // Removida pois não está sendo utilizada
 
-    reader.onload = (e) => {
-      img.onload = () => {
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 600;
-        let width = img.width;
-        let height = img.height;
+  // Função para upload de imagens
+  // const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files;
+  //   if (!files) return;
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
+  //   const newAttachments: { file: File; base64: string }[] = [];
+  //   for (let i = 0; i < files.length; i++) {
+  //     const file = files[i];
+  //     if (file.size > 5 * 1024 * 1024) {
+  //       showToast('Uma imagem excede o limite de 5MB', 'error');
+  //       continue;
+  //     }
+  //     try {
+  //       const compressedBase64 = await compressImageToBase64(file);
+  //       newAttachments.push({ file, base64: compressedBase64 });
+  //     } catch (error) {
+  //       console.error('Erro ao processar imagem:', error);
+  //       showToast('Erro ao processar uma das imagens', 'error');
+  //     }
+  //   }
 
-        canvas.width = width;
-        canvas.height = height;
+  //   setAttachments((prev) => [...prev, ...newAttachments]);
+  // };
 
-        ctx?.drawImage(img, 0, 0, width, height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-        resolve(compressedBase64);
-      };
-      img.onerror = reject;
-      img.src = e.target?.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
-
-// Função para upload de imagens
-const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  const files = event.target.files;
-  if (!files) return;
-
-  const newAttachments: { file: File; base64: string; }[] = [];
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Uma imagem excede o limite de 5MB', 'error');
-      continue;
-    }
-    try {
-      const compressedBase64 = await compressImageToBase64(file);
-      newAttachments.push({ file, base64: compressedBase64 });
-    } catch (error) {
-      console.error('Erro ao processar imagem:', error);
-      showToast('Erro ao processar uma das imagens', 'error');
-    }
-  }
-
-  setAttachments(prev => [...prev, ...newAttachments]);
-};
-
-// Função para remover imagem
-const removeImage = (index: number) => {
-  setAttachments(prev => prev.filter((_, i) => i !== index));
-};
+  // Função para remover imagem
+  // const removeImage = (index: number) => {
+  //   setAttachments((prev) => prev.filter((_, i) => i !== index));
+  // };
 
   useEffect(() => {
     let mounted = true;
@@ -282,7 +247,7 @@ const removeImage = (index: number) => {
     setLoading(true);
 
     try {
-  const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
+      const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
 
       const openingHours = openingHoursMap
         ? (Object.entries(openingHoursMap).map(([k, v]) => ({
@@ -449,7 +414,7 @@ const removeImage = (index: number) => {
               borderRadius: '1rem',
             }}
           >
-            <Typography variant="h3" color={theme.palette.customPrimaryShades[400]} fontWeight={700}>
+            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
               Cadastre seu negócio 2/3
             </Typography>
             <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
@@ -459,7 +424,8 @@ const removeImage = (index: number) => {
                   flexDirection: 'row',
                   alignSelf: 'center',
                   width: '120%',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
+                  gap: 'inherit',
                   alignItems: 'center',
                 }}
               >
@@ -470,8 +436,8 @@ const removeImage = (index: number) => {
                   height={20}
                   onClick={() => setStep(1)}
                 />
-                <Typography variant="h6" color={theme.palette.neutrals.darkGrey}>
-                  Dados da experiencia
+                <Typography variant="h6" color={theme.palette.customPrimaryShades[400]}>
+                  Dados da experiência
                 </Typography>
               </Stack>
 
@@ -546,6 +512,77 @@ const removeImage = (index: number) => {
                 placeholder="Nome fantasia"
                 onChange={(val) => setEstabName(val)}
               />
+              {(() => {
+                const hotelCategoryId = categories.find(
+                  (cat) => cat.name.toLowerCase() === 'hotel',
+                )?.id;
+                const restaurantCategoryId = categories.find(
+                  (cat) => cat.name.toLowerCase() === 'restaurante',
+                )?.id;
+
+                if (selectedCategoryId === hotelCategoryId) {
+                  return (
+                    <FormControl fullWidth sx={{ mt: 1 }}>
+                      <select
+                        style={{
+                          width: '100%',
+                          margin: 0,
+                          padding: '12px',
+                          borderRadius: '0.5rem',
+                          border: `1px solid ${theme.palette.neutrals.mediumGrey}`,
+                          fontSize: '1rem',
+                          background: theme.palette.neutrals.formsWhite,
+                          color: theme.palette.neutrals.darkGrey,
+                        }}
+                        onChange={() => {
+                          // Adapte para salvar o tipo selecionado em um estado, ex: setHotelType(e.target.value)
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Selecione o tipo de hotel
+                        </option>
+                        <option value="pousada">Pousada</option>
+                        <option value="hotel-fazenda">Hotel Fazenda</option>
+                        <option value="hotel">Hotel</option>
+                        <option value="resort">Resort</option>
+                        <option value="outro">Outro</option>
+                      </select>
+                    </FormControl>
+                  );
+                }
+                if (selectedCategoryId === restaurantCategoryId) {
+                  return (
+                    <FormControl fullWidth sx={{ mt: 1 }}>
+                      <select
+                        style={{
+                          width: '100%',
+                          margin: 0,
+                          padding: '12px',
+                          borderRadius: '0.5rem',
+                          border: `1px solid ${theme.palette.neutrals.mediumGrey}`,
+                          fontSize: '1rem',
+                          background: theme.palette.neutrals.formsWhite,
+                          color: theme.palette.neutrals.darkGrey,
+                        }}
+                        onChange={() => {
+                          // Adapte para salvar o tipo selecionado em um estado, ex: setRestaurantType(e.target.value)
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Selecione o tipo de restaurante
+                        </option>
+                        <option value="food-truck">Food Truck</option>
+                        <option value="bar">Bar</option>
+                        <option value="lancheria">Lancheria</option>
+                        <option value="restaurante">Restaurante</option>
+                      </select>
+                    </FormControl>
+                  );
+                }
+                return null;
+              })()}
               <Input
                 icon={mailIcon}
                 placeholder="E-mail do estabelecimento"
@@ -598,7 +635,7 @@ const removeImage = (index: number) => {
               borderRadius: '1rem',
             }}
           >
-            <Typography variant="h3" color={theme.palette.customPrimaryShades[400]} fontWeight={700}>
+            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
               Cadastre seu negócio 3/3
             </Typography>
             <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
@@ -608,7 +645,8 @@ const removeImage = (index: number) => {
                   flexDirection: 'row',
                   alignSelf: 'center',
                   width: '120%',
-                  justifyContent: 'space-between',
+                  justifyContent: 'center',
+                  gap: 'inherit',
                   alignItems: 'center',
                 }}
               >
@@ -620,25 +658,28 @@ const removeImage = (index: number) => {
                   onClick={() => setStep(2)}
                 />
                 <Typography variant="h6" color={theme.palette.customPrimaryShades[400]}>
-                  3/3 dados da experiencia
+                  Dados da experiência
                 </Typography>
               </Stack>
-
-              <OpeningHoursInput
-                value={openingHoursMap}
-                onChange={(val) => setOpeningHoursMap(val)}
-              />
               <Input
                 icon={descriptionIcon}
                 placeholder="Descrição"
                 onChange={(val) => setDescription(val)}
               />
-              <InputTags
-                availableTags={availableTags}
-                onChange={(tags) => setSelectedTags(tags)}
+              <OpeningHoursInput
+                value={openingHoursMap}
+                onChange={(val) => setOpeningHoursMap(val)}
               />
-              <InputImages
-                onChange={(atts) => setAttachments(atts)}
+              <InputImages onChange={(atts) => setAttachments(atts)} />
+              <InputTags
+                availableTags={
+                  selectedCategoryId
+                    ? availableTags.filter((tag) =>
+                        tag.experienceCategories.includes(selectedCategoryId),
+                      )
+                    : availableTags
+                }
+                onChange={(tags) => setSelectedTags(tags)}
               />
 
               {error && (
