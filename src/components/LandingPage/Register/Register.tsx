@@ -20,7 +20,7 @@ import bussinessIcon from '@/assets/BussinessIcon.png';
 import locationIcon from '@/assets/LocationIcon.png';
 import descriptionIcon from '@/assets/DescriptionIcon.png';
 // import imagesIcon from '@/assets/ImagesIcon.png';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { TopBar } from '../../TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
@@ -28,7 +28,7 @@ import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHour
 import { createExperienceOnly, registerUser } from '@/utils/service';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import InputTags from '@/components/Inputs/InputTags/InputTags';
 import InputImages from '@/components/Inputs/InputImages/InputImages';
@@ -204,16 +204,23 @@ export const Register = () => {
     }
 
     try {
-      let userDoc = null;
-      let userId: string | null = null;
-      const existingUser = await getDocs(collection(db, 'users')).then((snapshot) =>
-        snapshot.docs.find((doc) => {
-          const data = doc.data();
-          return data.email === email;
-        }),
-      );
-      if (!existingUser) {
-        userDoc = await registerUser({
+      const exitingUserSnap = await getDocs(collection(db, 'users'));
+      const userDocs = exitingUserSnap.docs as import('firebase/firestore').QueryDocumentSnapshot[];
+      const userDocFirestore = userDocs.find((doc) => {
+        const data = doc.data();
+        return data.email === email;
+      });
+
+      if (userDocFirestore) {
+        setCreatedUserId(userDocFirestore.id);
+        showToast('Usuário já existe, prosseguindo...', 'info');
+        setStep(2);
+        return;
+      }
+
+      try {
+        console.log('Creating user in Auth and Firestore...');
+        const userDoc = await registerUser({
           displayName: responsavel,
           cpf: responsavelCpf,
           email,
@@ -221,39 +228,36 @@ export const Register = () => {
           createdAt: serverTimestamp(),
           password,
         });
-        if (userDoc && userDoc.userId) {
-          userId = userDoc.userId;
-          setCreatedUserId(userId);
-        } else if (userDoc && typeof userDoc === 'string') {
-          userId = userDoc;
-          setCreatedUserId(userDoc);
-        } else {
-          const usersSnap = await getDocs(collection(db, 'users'));
-          const createdUser = usersSnap.docs.find((doc) => {
-            const data = doc.data();
-            return data.email === email;
-          });
-          if (createdUser) {
-            userId = createdUser.id;
-            setCreatedUserId(createdUser.id);
-          } else {
-            userId = null;
-            setCreatedUserId(null);
+        if (userDoc.error === 'Firebase: Error (auth/email-already-in-use).') {
+          console.log('Email já existente no Auth, verificando Firestore... ', userDocFirestore);
+          if (!userDocFirestore) {
+            const newUserDoc = await addDoc(collection(db, 'users'), {
+              displayName: responsavel,
+              cpf: responsavelCpf,
+              email,
+              phone: responsavelPhone,
+              createdAt: serverTimestamp(),
+            });
+            console.log('Created user in Firestore with existing Auth email: ', newUserDoc.id);
+            setCreatedUserId(newUserDoc.id);
+            showToast('Usuário já existente no Auth, criado no banco.', 'success');
+            setStep(2);
           }
+        } else {
+          console.log('Created user: ', userDoc);
+          setCreatedUserId(userDoc.userId);
+          showToast('Usuário criado com sucesso', 'success');
+          setStep(2);
         }
-      } else {
-        userId = existingUser.id;
-        setCreatedUserId(existingUser.id);
-      }
-      if (!userId) {
-        const msg = 'Erro ao criar ou localizar usuário. Tente novamente.';
+      } catch (e: any) {
+        const errorMessage =
+          typeof e === 'object' && e !== null && 'message' in e
+            ? (e as { message?: string }).message
+            : undefined;
+        const msg = errorMessage ?? 'Falha ao criar usuário';
         setError(msg);
         showToast(msg, 'error');
-        return;
       }
-
-      showToast('Usuário criado com sucesso', 'success');
-      setStep(2);
     } catch (e) {
       const errorMessage =
         typeof e === 'object' && e !== null && 'message' in e
@@ -266,6 +270,8 @@ export const Register = () => {
   };
 
   const handleStep2Next = async () => {
+    console.log('user id at step 2 next: ', createdUserId);
+    setError(null);
     if (
       !selectedCategoryId ||
       !estabName ||
@@ -287,6 +293,7 @@ export const Register = () => {
   const handleSubmit = async () => {
     setError(null);
     setLoading(true);
+    console.log('Submitting with user id: ', createdUserId);
 
     try {
       const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
