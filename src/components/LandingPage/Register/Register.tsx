@@ -94,15 +94,21 @@ export const Register = () => {
     async function loadTags() {
       try {
         const tagsSnap = await getDocs(collection(db, 'tags'));
+        console.log(
+          'Loaded tags: ',
+          tagsSnap.docs.map((d) => d.data()),
+        );
+
         const tags: { id: string; name: string; experienceCategories: string[] }[] = [];
         tagsSnap.docs.forEach((doc) => {
           const data = doc.data() as any;
           tags.push({
             id: doc.id,
-            name: data.name ?? data.title ?? doc.id,
+            name: data.name,
             experienceCategories: data.experienceCategories ?? [],
           });
         });
+        console.log('Processed tags: ', tags);
         setAvailableTags(tags);
       } catch (e) {
         console.warn('Failed to load tags', e);
@@ -201,15 +207,31 @@ export const Register = () => {
     }
 
     try {
-      const userDoc = await registerUser({
-        displayName: responsavel,
-        cpf: responsavelCpf,
-        email,
-        phone: responsavelPhone,
-        createdAt: serverTimestamp(),
-        password,
-      });
-      setCreatedUserId(userDoc.userId);
+      let userDoc = null;
+      const existingUser = await getDocs(collection(db, 'users')).then((snapshot) =>
+        snapshot.docs.find((doc) => {
+          const data = doc.data();
+          return data.email === email;
+        }),
+      );
+      if (!existingUser) {
+        userDoc = await registerUser({
+          displayName: responsavel,
+          cpf: responsavelCpf,
+          email,
+          phone: responsavelPhone,
+          createdAt: serverTimestamp(),
+          password,
+        });
+      }
+      setCreatedUserId(userDoc != null ? userDoc.userId : (existingUser?.id ?? null));
+      if (createdUserId == null) {
+        const msg = 'Erro ao criar ou localizar usuário. Tente novamente.';
+        setError(msg);
+        showToast(msg, 'error');
+        return;
+      }
+
       showToast('Usuário criado com sucesso', 'success');
       setStep(2);
     } catch (e) {
@@ -293,6 +315,16 @@ export const Register = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const tagsAvailable = (categoryId: string | undefined) => {
+    if (!categoryId) return availableTags;
+    const tags = availableTags.filter((tag) =>
+      tag.experienceCategories
+        .map((catRef: any) => catRef?._key?.path?.segments?.at?.(-1))
+        .includes(categoryId),
+    );
+    return tags;
   };
 
   return (
@@ -672,13 +704,7 @@ export const Register = () => {
               />
               <InputImages onChange={(atts) => setAttachments(atts)} />
               <InputTags
-                availableTags={
-                  selectedCategoryId
-                    ? availableTags.filter((tag) =>
-                        tag.experienceCategories.includes(selectedCategoryId),
-                      )
-                    : availableTags
-                }
+                availableTags={tagsAvailable(selectedCategoryId)}
                 onChange={(tags) => setSelectedTags(tags)}
               />
 

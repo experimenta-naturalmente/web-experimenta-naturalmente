@@ -15,8 +15,10 @@ export default function InputTags({
 }) {
   const theme = useTheme();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  console.log('Rendering InputTags with availableTags: ', availableTags);
 
   useEffect(() => {
+    console.log('Selected tags changed: ', selectedTags);
     onChange?.(selectedTags);
   }, [selectedTags, onChange]);
 
@@ -28,7 +30,10 @@ export default function InputTags({
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="body2" sx={{ mb: 1, color: theme.palette.neutrals?.darkGrey || theme.palette.text.primary }}>
+      <Typography
+        variant="body2"
+        sx={{ mb: 1, color: theme.palette.neutrals?.darkGrey || theme.palette.text.primary }}
+      >
         Selecione as tags:
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -42,7 +47,9 @@ export default function InputTags({
             sx={{
               cursor: 'pointer',
               '&:hover': {
-                backgroundColor: selectedTags.includes(tag.name) ? theme.palette.primary.main : theme.palette.grey[200],
+                backgroundColor: selectedTags.includes(tag.name)
+                  ? theme.palette.primary.main
+                  : theme.palette.grey[200],
               },
             }}
           />
