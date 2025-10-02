@@ -39,7 +39,6 @@ export const Register = () => {
 
   const [step, setStep] = useState<number>(1);
 
-  // account
   const [responsavel, setResponsavel] = useState('');
   const [responsavelCpf, setResponsavelCpf] = useState('');
   const [responsavelPhone, setResponsavelPhone] = useState('');
@@ -47,7 +46,6 @@ export const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // experience
   const [estabName, setEstabName] = useState('');
   const [estEmail, setEstEmail] = useState('');
   const [estPhone, setEstPhone] = useState('');
@@ -56,7 +54,6 @@ export const Register = () => {
   const [addressStreet, setAddressStreet] = useState('');
   const [addressNumber, setAddressNumber] = useState<string | number>('');
   const [addressZip, setAddressZip] = useState('');
-  // attachments and tags are lifted from child components
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
 
   const [createdUserId, setCreatedUserId] = useState<string | null>(null);
@@ -79,17 +76,17 @@ export const Register = () => {
     setToastOpen(true);
   };
 
-  // categories
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
-  // Estado para as tags e imagens
   const [availableTags, setAvailableTags] = useState<
     { id: string; name: string; experienceCategories: string[] }[]
   >([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
 
-  // Carregar tags do banco
+  const [hotelType, setHotelType] = useState<string>('');
+  const [restaurantType, setRestaurantType] = useState<string>('');
+
   useEffect(() => {
     async function loadTags() {
       try {
@@ -208,6 +205,7 @@ export const Register = () => {
 
     try {
       let userDoc = null;
+      let userId: string | null = null;
       const existingUser = await getDocs(collection(db, 'users')).then((snapshot) =>
         snapshot.docs.find((doc) => {
           const data = doc.data();
@@ -223,9 +221,31 @@ export const Register = () => {
           createdAt: serverTimestamp(),
           password,
         });
+        if (userDoc && userDoc.userId) {
+          userId = userDoc.userId;
+          setCreatedUserId(userId);
+        } else if (userDoc && typeof userDoc === 'string') {
+          userId = userDoc;
+          setCreatedUserId(userDoc);
+        } else {
+          const usersSnap = await getDocs(collection(db, 'users'));
+          const createdUser = usersSnap.docs.find((doc) => {
+            const data = doc.data();
+            return data.email === email;
+          });
+          if (createdUser) {
+            userId = createdUser.id;
+            setCreatedUserId(createdUser.id);
+          } else {
+            userId = null;
+            setCreatedUserId(null);
+          }
+        }
+      } else {
+        userId = existingUser.id;
+        setCreatedUserId(existingUser.id);
       }
-      setCreatedUserId(userDoc != null ? userDoc.userId : (existingUser?.id ?? null));
-      if (createdUserId == null) {
+      if (!userId) {
         const msg = 'Erro ao criar ou localizar usuário. Tente novamente.';
         setError(msg);
         showToast(msg, 'error');
@@ -566,8 +586,8 @@ export const Register = () => {
                           background: theme.palette.neutrals.formsWhite,
                           color: theme.palette.neutrals.darkGrey,
                         }}
-                        onChange={() => {
-                          // Adapte para salvar o tipo selecionado em um estado, ex: setHotelType(e.target.value)
+                        onChange={(e) => {
+                          setHotelType(e.target.value);
                         }}
                         defaultValue=""
                       >
@@ -597,8 +617,8 @@ export const Register = () => {
                           background: theme.palette.neutrals.formsWhite,
                           color: theme.palette.neutrals.darkGrey,
                         }}
-                        onChange={() => {
-                          // Adapte para salvar o tipo selecionado em um estado, ex: setRestaurantType(e.target.value)
+                        onChange={(e) => {
+                          setRestaurantType(e.target.value);
                         }}
                         defaultValue=""
                       >
