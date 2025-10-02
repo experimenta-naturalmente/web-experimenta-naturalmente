@@ -6,10 +6,11 @@ interface InputProps {
   icon?: StaticImageData;
   placeholder: string;
   type?: string;
+  value?: string;
   onChange: (value: string) => void;
 }
 
-export default function Input({ icon, placeholder, type = 'text', onChange }: InputProps) {
+export default function Input({ icon, placeholder, type = 'text', value, onChange }: InputProps) {
   return (
     <Box
       sx={{
@@ -31,6 +32,7 @@ export default function Input({ icon, placeholder, type = 'text', onChange }: In
       <InputBase
         placeholder={placeholder}
         type={type}
+        value={value}
         fullWidth
         onChange={(e) => onChange(e.target.value)}
         inputProps={{ 'aria-label': placeholder }}

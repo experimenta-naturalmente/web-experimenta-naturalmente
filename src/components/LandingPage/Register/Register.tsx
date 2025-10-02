@@ -19,8 +19,7 @@ import arrowIcon from '@/assets/ArrowIcon.png';
 import bussinessIcon from '@/assets/BussinessIcon.png';
 import locationIcon from '@/assets/LocationIcon.png';
 import descriptionIcon from '@/assets/DescriptionIcon.png';
-// import imagesIcon from '@/assets/ImagesIcon.png';
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TopBar } from '../../TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
@@ -28,10 +27,11 @@ import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHour
 import { createExperienceOnly, registerUser } from '@/utils/service';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import { useRouter } from 'next/navigation';
-import { addDoc, collection, doc, getDocs, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import InputTags from '@/components/Inputs/InputTags/InputTags';
 import InputImages from '@/components/Inputs/InputImages/InputImages';
+import Image from 'next/image';
 
 export const Register = () => {
   const theme = useTheme();
@@ -79,13 +79,79 @@ export const Register = () => {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<
-    { id: string; name: string; experienceCategories: string[] }[]
+    {
+      id: string;
+      name: string;
+      experienceCategories: { _key: { path: { segments: string[] } } }[];
+    }[]
   >([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
 
   const [hotelType, setHotelType] = useState<string>('');
   const [restaurantType, setRestaurantType] = useState<string>('');
+
+  const formatCPF = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+
+    const limitedValue = cleanValue.slice(0, 11);
+
+    if (limitedValue.length <= 3) {
+      return limitedValue;
+    } else if (limitedValue.length <= 6) {
+      return limitedValue.replace(/(\d{3})(\d+)/, '$1.$2');
+    } else if (limitedValue.length <= 9) {
+      return limitedValue.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
+    } else {
+      return limitedValue.replace(/(\d{3})(\d{3})(\d{3})(\d+)/, '$1.$2.$3-$4');
+    }
+  };
+
+  const formatCNPJ = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+
+    const limitedValue = cleanValue.slice(0, 14);
+
+    if (limitedValue.length <= 2) {
+      return limitedValue;
+    } else if (limitedValue.length <= 5) {
+      return limitedValue.replace(/(\d{2})(\d+)/, '$1.$2');
+    } else if (limitedValue.length <= 8) {
+      return limitedValue.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
+    } else if (limitedValue.length <= 12) {
+      return limitedValue.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
+    } else {
+      return limitedValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
+    }
+  };
+
+  const formatPhone = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+
+    const limitedValue = cleanValue.slice(0, 11);
+
+    if (limitedValue.length <= 2) {
+      return limitedValue;
+    } else if (limitedValue.length <= 7) {
+      return limitedValue.replace(/(\d{2})(\d+)/, '($1) $2');
+    } else if (limitedValue.length <= 10) {
+      return limitedValue.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
+    } else {
+      return limitedValue.replace(/(\d{2})(\d{5})(\d+)/, '($1) $2-$3');
+    }
+  };
+
+  const formatCEP = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '');
+
+    const limitedValue = cleanValue.slice(0, 8);
+
+    if (limitedValue.length <= 5) {
+      return limitedValue;
+    } else {
+      return limitedValue.replace(/(\d{5})(\d+)/, '$1-$2');
+    }
+  };
 
   useEffect(() => {
     async function loadTags() {
@@ -96,9 +162,13 @@ export const Register = () => {
           tagsSnap.docs.map((d) => d.data()),
         );
 
-        const tags: { id: string; name: string; experienceCategories: string[] }[] = [];
+        const tags: {
+          id: string;
+          name: string;
+          experienceCategories: { _key: { path: { segments: string[] } } }[];
+        }[] = [];
         tagsSnap.docs.forEach((doc) => {
-          const data = doc.data() as any;
+          const data = doc.data();
           tags.push({
             id: doc.id,
             name: data.name,
@@ -249,7 +319,7 @@ export const Register = () => {
           showToast('Usuário criado com sucesso', 'success');
           setStep(2);
         }
-      } catch (e: any) {
+      } catch (e) {
         const errorMessage =
           typeof e === 'object' && e !== null && 'message' in e
             ? (e as { message?: string }).message
@@ -307,7 +377,13 @@ export const Register = () => {
           })) as import('@/utils/service').OpeningHourItem[])
         : undefined;
 
+      const hotelCategoryId = categories.find((cat) => cat.name.toLowerCase() === 'hotel')?.id;
+      const restaurantCategoryId = categories.find(
+        (cat) => cat.name.toLowerCase() === 'restaurante',
+      )?.id;
+
       const tags = selectedTags;
+
       const finalExperience: import('@/utils/service').ExperiencePayload = {
         name: estabName,
         description,
@@ -319,6 +395,10 @@ export const Register = () => {
         attachments: attachmentsPayload,
         openingHours,
         tags,
+        ownerId: createdUserId ?? undefined,
+
+        ...(selectedCategoryId === hotelCategoryId && hotelType && { hotelType }),
+        ...(selectedCategoryId === restaurantCategoryId && restaurantType && { restaurantType }),
       };
       console.log('Final experience payload: ', finalExperience);
       if (!createdUserId) {
@@ -346,6 +426,7 @@ export const Register = () => {
 
   const tagsAvailable = (categoryId: string | undefined) => {
     if (!categoryId) return availableTags;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags = availableTags.filter((tag) =>
       tag.experienceCategories
         .map((catRef: any) => catRef?._key?.path?.segments?.at?.(-1))
@@ -425,7 +506,11 @@ export const Register = () => {
               <Input
                 icon={personIcon}
                 placeholder="CPF do responsável"
-                onChange={(val) => setResponsavelCpf(val)}
+                value={responsavelCpf}
+                onChange={(val) => {
+                  const formatted = formatCPF(val);
+                  setResponsavelCpf(formatted);
+                }}
               />
               <Input
                 icon={mailIcon}
@@ -437,7 +522,11 @@ export const Register = () => {
                 icon={phoneIcon}
                 placeholder="Telefone do responsável"
                 type="tel"
-                onChange={(val) => setResponsavelPhone(val)}
+                value={responsavelPhone}
+                onChange={(val) => {
+                  const formatted = formatPhone(val);
+                  setResponsavelPhone(formatted);
+                }}
               />
               <Input
                 icon={lockIcon}
@@ -488,7 +577,7 @@ export const Register = () => {
                   alignItems: 'center',
                 }}
               >
-                <img
+                <Image
                   src={arrowIcon.src}
                   alt="arrow icon"
                   width={20}
@@ -652,7 +741,11 @@ export const Register = () => {
                 icon={phoneIcon}
                 placeholder="Telefone do estabelecimento"
                 type="tel"
-                onChange={(val) => setEstPhone(val)}
+                value={estPhone}
+                onChange={(val) => {
+                  const formatted = formatPhone(val);
+                  setEstPhone(formatted);
+                }}
               />
 
               <Stack
@@ -669,9 +762,24 @@ export const Register = () => {
                   onChange={(val) => setAddressStreet(val)}
                 />
                 <Input placeholder="N°" onChange={(val) => setAddressNumber(val)} />
-                <Input placeholder="CEP" onChange={(val) => setAddressZip(val)} />
+                <Input
+                  placeholder="CEP"
+                  value={addressZip}
+                  onChange={(val) => {
+                    const formatted = formatCEP(val);
+                    setAddressZip(formatted);
+                  }}
+                />
               </Stack>
-              <Input icon={lockIcon} placeholder="CNPJ" onChange={(val) => setCnpj(val)} />
+              <Input
+                icon={lockIcon}
+                placeholder="CNPJ"
+                value={cnpj}
+                onChange={(val) => {
+                  const formatted = formatCNPJ(val);
+                  setCnpj(formatted);
+                }}
+              />
 
               <GradientRoundButton
                 sx={{ width: '15rem', height: '2.5rem', fontWeight: 500, fontSize: '0.9rem' }}
@@ -709,7 +817,7 @@ export const Register = () => {
                   alignItems: 'center',
                 }}
               >
-                <img
+                <Image
                   src={arrowIcon.src}
                   alt="arrow icon"
                   width={20}

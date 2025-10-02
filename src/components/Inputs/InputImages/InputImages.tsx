@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Box from '@mui/material/Box';
 import InputBase from '@mui/material/InputBase';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -33,6 +34,7 @@ export default function InputImages({
     setToastMessage(message);
     setToastSeverity(severity);
     setToastOpen(true);
+    console.log(`Toast open? ${toastOpen}: ${toastSeverity.toUpperCase()}: ${toastMessage}`);
   };
 
   const openFileDialog = () => {
@@ -128,9 +130,11 @@ export default function InputImages({
                 mr: 1,
               }}
             >
-              <img
+              <Image
                 src={attachment.base64}
                 alt={`Preview ${index}`}
+                width={48}
+                height={48}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
               <IconButton
