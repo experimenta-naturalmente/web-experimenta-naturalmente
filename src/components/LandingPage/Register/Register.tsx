@@ -426,9 +426,9 @@ export const Register = () => {
 
   const tagsAvailable = (categoryId: string | undefined) => {
     if (!categoryId) return availableTags;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags = availableTags.filter((tag) =>
       tag.experienceCategories
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((catRef: any) => catRef?._key?.path?.segments?.at?.(-1))
         .includes(categoryId),
     );
