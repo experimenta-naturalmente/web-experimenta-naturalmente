@@ -6,9 +6,9 @@ import Logo from '../../assets/ESCNLogo.svg';
 import { ColoredRoundButton, LightRoundButton } from '../UI/Buttons/RoundButton.style';
 import Link from 'next/link';
 
-type TopBarProps = { isRegister?: boolean };
+type TopBarProps = { isRegister?: boolean; isLogin?: boolean };
 
-export const TopBar = ({ isRegister = false }: TopBarProps) => {
+export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => {
   return (
     <TopBarContainer>
       <Logo style={{ height: '5rem', width: '10rem' }} />
@@ -24,7 +24,11 @@ export const TopBar = ({ isRegister = false }: TopBarProps) => {
           <NavigationButton label="Baixe o App" href="/download" />
           <NavigationButton label="Contato" href="/contato" />
         </ButtonGroup>
-        <LightRoundButton>Entrar</LightRoundButton>
+        {!isLogin && (
+          <Link href="/login" style={{ textDecoration: 'none' }}>
+            <LightRoundButton>Entrar</LightRoundButton>
+          </Link>
+        )}
         {!isRegister && (
           <Link href="/register" style={{ textDecoration: 'none' }}>
             <ColoredRoundButton>
