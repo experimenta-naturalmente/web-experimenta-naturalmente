@@ -1,4 +1,4 @@
-import { Alert, Link, Stack, Typography, useTheme } from '@mui/material';
+import { Alert, Link, Snackbar, Stack, Typography, useTheme } from '@mui/material';
 import backgroundImg from '@/assets/BackgroundRegister.png';
 import mailIcon from '@/assets/MailIcon.png';
 import lockIcon from '@/assets/LockIcon.png';
@@ -16,7 +16,22 @@ export const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
+    'success',
+  );
   const [error, setError] = useState('');
+
+  const showToast = (
+    message: string,
+    severity: 'success' | 'error' | 'info' | 'warning' = 'info',
+  ) => {
+    setToastMessage(message);
+    setToastSeverity(severity);
+    setToastOpen(true);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,19 +40,31 @@ export const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Login OK, redireciona para home
+      setError('');
+      showToast('Login Realizado!', 'success');
       router.push('/home');
     } catch (error: any) {
       // Tratando erro do Firebase e mostrando mensagem amigável
       if (error.code === 'auth/user-not-found') {
-        setError('Usuário não encontrado.');
+        const msg = 'Usuário não encontrado.';
+        //setError(msg);
+        showToast(msg, 'warning');
       } else if (error.code === 'auth/invalid-email') {
-        setError('Email inválido.');
+        const msg = 'Email inválido.';
+        //setError(msg);
+        showToast(msg, 'warning');
       } else if (error.code === 'auth/missing-password') {
-        setError('Insira a senha.');
+        const msg = 'Insira a senha.';
+        //setError(msg);
+        showToast(msg, 'warning');
       } else if (error.code === 'auth/invalid-credential') {
-        setError('Usuário ou senha inválidos.');
+        const msg = 'Usuário ou senha inválidos.';
+        //setError(msg);
+        showToast(msg, 'warning');
       } else {
-        setError('Ocorreu um erro. Tente novamente.');
+        const msg = 'Ocorreu um erro. Tente novamente mais tarde.';
+        //setError(msg);
+        showToast(msg, 'error');
       }
     }
   };
@@ -45,37 +72,28 @@ export const Login = () => {
   const handleForgotPassword = async (email: string) => {
     try {
       await sendPasswordResetEmail(auth, email);
-      setError('Email de recuperação enviado!');
+      setError('');
+      showToast('Email de recuperação enviado!', 'success');
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {
-        setError('Email inválido.');
+        const msg = 'Email inválido.';
+        setError(msg);
+        showToast(msg, 'warning');
       } else if (error.code === 'auth/missing-email') {
-        setError('Insira o email no login.');
+        const msg = 'Insira o email no login.';
+        setError(msg);
+        showToast(msg, 'warning');
       } else if (error.code === 'auth/invalid-email') {
-        setError('Email inválido.');
+        const msg = 'Email inválido.';
+        setError(msg);
+        showToast(msg, 'warning');
       } else {
-        setError('Ocorreu um erro.');
+        const msg = 'Ocorreu um erro. Tente novamente mais tarde.';
+        setError(msg);
+        showToast(msg, 'error');
       }
     }
   };
-
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-
-  // const [toastOpen, setToastOpen] = useState(false);
-  // const [toastMessage, setToastMessage] = useState('');
-  // const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
-  //  'success',
-  // );
-
-  // const showToast = (
-  //   message: string,
-  //   severity: 'success' | 'error' | 'info' | 'warning' = 'info',
-  // ) => {
-  //   setToastMessage(message);
-  //   setToastSeverity(severity);
-  //   setToastOpen(true);
-  // };
 
   useEffect(() => {}, []);
 
@@ -192,7 +210,7 @@ export const Login = () => {
         </div>
       </Stack>
 
-      {/* <Snackbar
+      <Snackbar
         open={toastOpen}
         autoHideDuration={4000}
         onClose={() => setToastOpen(false)}
@@ -201,7 +219,7 @@ export const Login = () => {
         <Alert onClose={() => setToastOpen(false)} severity={toastSeverity} sx={{ width: '100%' }}>
           {toastMessage}
         </Alert>
-      </Snackbar> */}
+      </Snackbar>
     </Stack>
   );
 };
