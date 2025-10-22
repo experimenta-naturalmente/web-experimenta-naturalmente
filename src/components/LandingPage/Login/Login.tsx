@@ -1,4 +1,4 @@
-import { Alert, Link, Snackbar, Stack, Typography, useTheme } from '@mui/material';
+import { Alert, Link, Snackbar, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import backgroundImg from '@/assets/BackgroundRegister.png';
 import mailIcon from '@/assets/MailIcon.png';
 import lockIcon from '@/assets/LockIcon.png';
@@ -12,6 +12,7 @@ import Input from '@/components/Inputs/Input/Input';
 
 export const Login = () => {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -101,7 +102,7 @@ export const Login = () => {
     <Stack
       width="100%"
       height="100vh"
-      padding={'1.5rem'}
+      padding={isSmallScreen ? '1rem' : '1.5rem'}
       sx={{
         backgroundImage: `url(${backgroundImg.src})`,
         backgroundSize: 'cover',
@@ -111,11 +112,11 @@ export const Login = () => {
       <TopBar isLogin={true} />
 
       <Stack
-        width={'45%'}
-        height={'90%'}
-        gap={'1.5rem'}
-        justifyContent={'center'}
-        alignSelf={'center'}
+        width={isSmallScreen ? '90%' : '45%'}
+        height="90%"
+        gap={isSmallScreen ? '1rem' : '1.5rem'}
+        justifyContent="center"
+        alignSelf="center"
       >
         <div
           style={{
@@ -123,24 +124,34 @@ export const Login = () => {
             backgroundColor: theme.palette.neutrals.formsWhite,
             alignItems: 'center',
             flexDirection: 'column',
-            padding: '1rem',
+            padding: isSmallScreen ? '1rem' : '1.5rem',
             borderRadius: '1rem',
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
-          <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+          <Typography
+            variant={isSmallScreen ? 'h4' : 'h3'}
+            color={theme.palette.neutrals.darkGrey}
+            fontWeight={700}
+            textAlign="center"
+          >
             Entre na plataforma
           </Typography>
+
           <Stack
-            width={'60%'}
-            gap={'1rem'}
-            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            width="100%"
+            gap={isSmallScreen ? '0.75rem' : '1rem'}
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 1 }}
           >
             <Typography
               variant="h6"
               color={theme.palette.neutrals.darkGrey}
               textAlign="center"
-              width="200%"
-              fontSize="1.08rem"
+              sx={{
+                width: isSmallScreen ? '100%' : '80%',
+                fontSize: isSmallScreen ? '1rem' : '1.08rem',
+              }}
             >
               Gerencie suas experiências no Experimenta São Chico
             </Typography>
@@ -149,10 +160,9 @@ export const Login = () => {
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
-                alignSelf: 'center',
-                width: '110%',
                 justifyContent: 'center',
                 alignItems: 'center',
+                width: '100%',
               }}
             >
               <Typography variant="h6" color={theme.palette.customPrimaryShades[400]}>
@@ -160,15 +170,15 @@ export const Login = () => {
               </Typography>
             </Stack>
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} style={{ width: '100%' }}>
               <Stack
                 spacing={2}
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignSelf: 'center',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  width: '100%',
                 }}
               >
                 <Input
@@ -176,6 +186,8 @@ export const Login = () => {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e)}
+                  //size={isSmallScreen ? 'small' : 'medium'} // assumindo que seu Input aceite essa prop
+                  sx={{ width: '100%' }}
                 />
                 <Input
                   icon={lockIcon}
@@ -183,25 +195,37 @@ export const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e)}
+                  //size={isSmallScreen ? 'small' : 'medium'}
+                  sx={{ width: '100%' }}
                 />
 
                 <GradientRoundButton
                   type="submit"
-                  sx={{ width: '15rem', height: '2.5rem', fontWeight: 500, fontSize: '0.9rem' }}
-                  //onClick={handleCreateAccount}
-                  onClick={() => {}}
+                  sx={{
+                    width: isSmallScreen ? '100%' : '15rem',
+                    height: isSmallScreen ? '3rem' : '2.5rem',
+                    fontWeight: 500,
+                    fontSize: isSmallScreen ? '1rem' : '0.9rem',
+                  }}
                 >
                   Entrar
                 </GradientRoundButton>
+
                 {error && (
                   <Alert
                     severity="warning"
-                    sx={{ fontSize: '0.875rem', mb: 2, textWrap: 'wrap', width: '100%' }}
+                    sx={{ fontSize: '0.875rem', mb: 2, width: '100%', whiteSpace: 'normal' }}
                   >
                     {error}
                   </Alert>
                 )}
-                <Link underline="hover" variant="body3" onClick={() => handleForgotPassword(email)}>
+
+                <Link
+                  underline="hover"
+                  variant="body3"
+                  onClick={() => handleForgotPassword(email)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   Esqueci minha senha
                 </Link>
               </Stack>
