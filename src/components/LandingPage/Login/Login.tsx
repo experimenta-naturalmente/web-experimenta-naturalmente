@@ -44,27 +44,23 @@ export const Login = () => {
       setError('');
       showToast('Login Realizado!', 'success');
       router.push('/home');
-    } catch (error: any) {
+    } catch (err: unknown) {
       // Tratando erro do Firebase e mostrando mensagem amigável
+      const error = (err as { code?: string }) || {};
       if (error.code === 'auth/user-not-found') {
         const msg = 'Usuário não encontrado.';
-        //setError(msg);
         showToast(msg, 'warning');
       } else if (error.code === 'auth/invalid-email') {
         const msg = 'Email inválido.';
-        //setError(msg);
         showToast(msg, 'warning');
       } else if (error.code === 'auth/missing-password') {
         const msg = 'Insira a senha.';
-        //setError(msg);
         showToast(msg, 'warning');
       } else if (error.code === 'auth/invalid-credential') {
         const msg = 'Usuário ou senha inválidos.';
-        //setError(msg);
         showToast(msg, 'warning');
       } else {
         const msg = 'Ocorreu um erro. Tente novamente mais tarde.';
-        //setError(msg);
         showToast(msg, 'error');
       }
     }
@@ -75,7 +71,8 @@ export const Login = () => {
       await sendPasswordResetEmail(auth, email);
       setError('');
       showToast('Email de recuperação enviado!', 'success');
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = (err as { code?: string }) || {};
       if (error.code === 'auth/user-not-found') {
         const msg = 'Email inválido.';
         setError(msg);
