@@ -12,7 +12,14 @@ interface InputProps {
   sx?: SxProps<Theme>;
 }
 
-export default function Input({ icon, placeholder, type = 'text', value, onChange, sx }: InputProps) {
+export default function Input({
+  icon,
+  placeholder,
+  type = 'text',
+  value,
+  onChange,
+  sx,
+}: InputProps) {
   const baseSx: SxProps<Theme> = {
     display: 'flex',
     alignItems: 'center',

@@ -39,11 +39,20 @@ export const Login = () => {
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Login OK, redireciona para home
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Login OK, verifica se é admin
+      const { getUserData } = await import('@/utils/service');
+      const userData = await getUserData(userCredential.user.uid);
+
       setError('');
       showToast('Login Realizado!', 'success');
-      router.push('/home');
+
+      // Redireciona para /admin se for admin, senão para /home
+      if (userData?.isAdmin) {
+        router.push('/admin');
+      } else {
+        router.push('/home');
+      }
     } catch (err: unknown) {
       // Tratando erro do Firebase e mostrando mensagem amigável
       const error = (err as { code?: string }) || {};
