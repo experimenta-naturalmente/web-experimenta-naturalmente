@@ -196,3 +196,22 @@ export async function getUserData(uid: string): Promise<UserData | null> {
     return null;
   }
 }
+
+// Get experiences by owner ID
+export async function getExperiencesByOwnerId(ownerId: string): Promise<Experience[]> {
+  const experiencesCol = collection(db, 'experiences');
+  const snapshot = await getDocs(experiencesCol);
+  const experiences: Experience[] = [];
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.ownerId === ownerId) {
+      experiences.push({
+        id: doc.id,
+        ...data,
+      } as Experience);
+    }
+  });
+
+  return experiences;
+}
