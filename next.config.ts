@@ -2,8 +2,14 @@ import type { NextConfig } from "next";
 import type { RuleSetRule } from "webpack";
 
 const nextConfig: NextConfig = {
-  // Configuração vazia do Turbopack para permitir uso do webpack
-  turbopack: {},
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
   webpack(config) {
     const fileLoaderRule = config.module.rules.find((rule: RuleSetRule) =>
       rule.test?.test?.('.svg')

@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import Logo from '@/assets/ESCNLogo.svg';
 
 type TopBarProps = { isRegister?: boolean; isLogin?: boolean };
 
@@ -28,14 +29,8 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
 
   return (
     <TopBarContainer>
-      <Link href="/" style={{ textDecoration: 'none' }}>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          sx={{ color: '#3A502C', cursor: 'pointer' }}
-        >
-          Experimenta Naturalmente
-        </Typography>
+      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+        <Logo style={{ height: '2.5rem', width: 'auto', cursor: 'pointer' }} />
       </Link>
       <Box
         sx={{
