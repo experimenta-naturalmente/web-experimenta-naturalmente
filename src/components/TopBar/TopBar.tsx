@@ -1,10 +1,9 @@
-import { Box, ButtonGroup } from '@mui/material';
+import { Box, ButtonGroup, Typography } from '@mui/material';
 import { TopBarContainer } from './TopBar.style';
 import { NavigationButton } from './NavigationButton/NavigationButton';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import LogoutIcon from '@mui/icons-material/Logout';
 import BusinessIcon from '@mui/icons-material/Business';
-import Logo from '../../assets/ESCNLogo.svg';
 import { ColoredRoundButton, LightRoundButton } from '../UI/Buttons/RoundButton.style';
 import Link from 'next/link';
 import { useAuth } from '@/lib/useAuth';
@@ -29,7 +28,15 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
 
   return (
     <TopBarContainer>
-      <Logo style={{ height: '5rem', width: '10rem' }} />
+      <Link href="/" style={{ textDecoration: 'none' }}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          sx={{ color: '#3A502C', cursor: 'pointer' }}
+        >
+          Experimenta Naturalmente
+        </Typography>
+      </Link>
       <Box
         sx={{
           display: 'flex',
