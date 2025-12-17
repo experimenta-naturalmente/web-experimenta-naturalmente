@@ -8,14 +8,21 @@ type Tag = { id: number | string; name: string };
 
 export default function InputTags({
   availableTags = [],
+  initialSelectedTags = [],
   onChange,
 }: {
   availableTags?: Tag[];
+  initialSelectedTags?: string[];
   onChange?: (selected: string[]) => void;
 }) {
   const theme = useTheme();
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   console.log('Rendering InputTags with availableTags: ', availableTags);
+
+  // Atualizar selectedTags quando initialSelectedTags mudar
+  useEffect(() => {
+    setSelectedTags(initialSelectedTags);
+  }, [initialSelectedTags]);
 
   useEffect(() => {
     console.log('Selected tags changed: ', selectedTags);

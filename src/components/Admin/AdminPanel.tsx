@@ -215,6 +215,36 @@ export const AdminPanel = () => {
           <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
             Painel Administrativo
           </Typography>
+        </Stack>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-evenly"
+          alignItems="center"
+          gap={2}
+        >
+          <TextField
+            placeholder="Buscar experiências..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
+                </InputAdornment>
+              ),
+              sx: {
+                backgroundColor: theme.palette.neutrals.formsWhite,
+                borderRadius: '28px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: '1px solid ' + theme.palette.neutrals.mediumGrey,
+                },
+                height: 'fit-content',
+                width: { xs: '100%', sm: '600px' },
+                fontSize: '1.2rem',
+              },
+            }}
+          />
 
           <GradientRoundButton
             onClick={handleCreate}
@@ -224,26 +254,6 @@ export const AdminPanel = () => {
             Nova Experiência
           </GradientRoundButton>
         </Stack>
-
-        <TextField
-          placeholder="Buscar experiências..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
-              </InputAdornment>
-            ),
-            sx: {
-              backgroundColor: theme.palette.neutrals.lightGrey,
-              borderRadius: '8px',
-              '& .MuiOutlinedInput-notchedOutline': {
-                border: 'none',
-              },
-            },
-          }}
-        />
 
         {filteredExperiences.length === 0 && !loading && (
           <Stack alignItems="center" py={8}>

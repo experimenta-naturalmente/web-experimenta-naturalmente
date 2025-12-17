@@ -24,7 +24,7 @@ import bussinessIcon from '@/assets/BussinessIcon.png';
 import locationIcon from '@/assets/LocationIcon.png';
 import descriptionIcon from '@/assets/DescriptionIcon.png';
 import lockIcon from '@/assets/LockIcon.png';
-import { Experience, ExperiencePayload } from '@/utils/service';
+import { Experience, ExperiencePayload, Attachment, Tag, OpeningHourItem } from '@/utils/service';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -60,6 +60,12 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showImageWarning, setShowImageWarning] = useState(false);
+  const [existingImages, setExistingImages] = useState<Attachment[]>([]);
+  const [originalTags, setOriginalTags] = useState<Tag[]>([]);
+  const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
+  const [openingHoursModified, setOpeningHoursModified] = useState(false);
+  const [tagsModified, setTagsModified] = useState(false);
 
   const formatPhone = (value: string) => {
     const cleanValue = value.replace(/\D/g, '');
@@ -153,13 +159,22 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       setAddressNumber(experience.address?.number || '');
       setAddressZip(experience.address?.zipCode || '');
       setSelectedCategoryId(experience.categoryId);
+      
+      // Salvar imagens existentes
+      setExistingImages(experience.attachments?.filter((att) => att.type === 'image') || []);
 
+      // Salvar tags originais
+      setOriginalTags(experience.tags || []);
+      
       // Convert tags to string array if they are objects
       const tagsAsStrings = (experience.tags || [])
         .map((tag) => (typeof tag === 'string' ? tag : tag?.name || ''))
         .filter(Boolean);
       setSelectedTags(tagsAsStrings);
 
+      // Salvar horários de funcionamento originais
+      setOriginalOpeningHours(experience.openingHours);
+      
       // Convert opening hours to map format
       if (experience.openingHours && experience.openingHours.length > 0) {
         const hoursMap: OpeningHoursMap = {
@@ -232,6 +247,11 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       setOpeningHoursMap(undefined);
       setSelectedTags([]);
       setAttachments([]);
+      setExistingImages([]);
+      setOriginalTags([]);
+      setOriginalOpeningHours(undefined);
+      setOpeningHoursModified(false);
+      setTagsModified(false);
     }
   }, [experience]);
 
@@ -241,18 +261,39 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       return;
     }
 
+    // Se for edição e houver novas imagens, mostrar aviso
+    if (isEdit && attachments.length > 0 && existingImages.length > 0) {
+      setShowImageWarning(true);
+      return;
+    }
+
+    await saveExperience();
+  };
+
+  const saveExperience = async () => {
     setLoading(true);
     try {
-      const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
+      // Se houver novas imagens, usar elas; senão, manter as existentes
+      const attachmentsPayload = attachments.length > 0
+        ? attachments.map((a) => ({ type: 'image', url: a.base64 }))
+        : existingImages;
 
-      const openingHours = openingHoursMap
-        ? Object.entries(openingHoursMap).map(([k, v]) => ({
-            dayOfWeek: DAY_KEY_TO_NAME[k] ?? k,
-            openingHour: v.open ?? '',
-            closingHour: v.close ?? '',
-            isWorkingDay: v.closed ? false : true,
-          }))
-        : undefined;
+      // Usar horários originais se não foi modificado pelo usuário
+      let openingHours;
+      if (isEdit && !openingHoursModified && originalOpeningHours) {
+        // Mantém os horários originais se não foi alterado
+        openingHours = originalOpeningHours;
+      } else if (openingHoursMap) {
+        // Usa os novos horários se foi modificado
+        openingHours = Object.entries(openingHoursMap).map(([k, v]) => ({
+          dayOfWeek: DAY_KEY_TO_NAME[k] ?? k,
+          openingHour: v.open ?? '',
+          closingHour: v.close ?? '',
+          isWorkingDay: v.closed ? false : true,
+        }));
+      } else {
+        openingHours = undefined;
+      }
 
       const experienceData: Partial<ExperiencePayload> & { id?: string } = {
         name: estabName,
@@ -263,8 +304,8 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
         categoryId: selectedCategoryId,
         address: { street: addressStreet, number: +addressNumber, zipCode: addressZip },
         openingHours,
-        tags: selectedTags,
-        ...(attachments.length > 0 && { attachments: attachmentsPayload }),
+        tags: isEdit && !tagsModified ? originalTags : selectedTags,
+        attachments: attachmentsPayload,
       };
 
       if (isEdit) {
@@ -422,16 +463,80 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
             }}
           />
 
-          <OpeningHoursInput value={openingHoursMap} onChange={(val) => setOpeningHoursMap(val)} />
+          <OpeningHoursInput 
+            value={openingHoursMap} 
+            onChange={(val) => {
+              setOpeningHoursMap(val);
+              setOpeningHoursModified(true);
+            }} 
+          />
 
           <InputImages onChange={(atts) => setAttachments(atts)} />
 
           <InputTags
             availableTags={tagsAvailable(selectedCategoryId)}
-            onChange={(tags) => setSelectedTags(tags)}
+            initialSelectedTags={selectedTags}
+            onChange={(tags) => {
+              setSelectedTags(tags);
+              setTagsModified(true);
+            }}
           />
         </Stack>
       </DialogContent>
+
+      {/* Modal de aviso sobre substituição de imagens */}
+      <Dialog
+        open={showImageWarning}
+        onClose={() => setShowImageWarning(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '1rem',
+            backgroundColor: theme.palette.neutrals.formsWhite,
+            maxWidth: '450px',
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" color={theme.palette.neutrals.darkGrey} fontWeight={600}>
+            Substituir Imagens?
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color={theme.palette.neutrals.mediumGrey}>
+            Você adicionou novas imagens. Ao salvar, as imagens atuais ({existingImages.length}{' '})
+            serão substituídas pelas {attachments.length} nova(s) imagem(ns).
+          </Typography>
+          <Typography variant="body2" color={theme.palette.neutrals.mediumGrey} sx={{ mt: 2 }}>
+            Deseja continuar?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <GradientRoundButton
+            onClick={() => setShowImageWarning(false)}
+            sx={{
+              width: '7rem',
+              height: '2.5rem',
+              fontWeight: 500,
+              fontSize: '0.85rem',
+              background: theme.palette.neutrals.mediumGrey,
+              '&:hover': {
+                background: theme.palette.neutrals.darkGrey,
+              },
+            }}
+          >
+            Cancelar
+          </GradientRoundButton>
+          <GradientRoundButton
+            onClick={() => {
+              setShowImageWarning(false);
+              saveExperience();
+            }}
+            sx={{ width: '7rem', height: '2.5rem', fontWeight: 500, fontSize: '0.85rem' }}
+          >
+            Confirmar
+          </GradientRoundButton>
+        </DialogActions>
+      </Dialog>
 
       <DialogActions sx={{ p: 3, pt: 2 }}>
         <GradientRoundButton
