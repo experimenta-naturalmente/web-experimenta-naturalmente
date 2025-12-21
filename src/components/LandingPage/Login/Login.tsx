@@ -113,6 +113,8 @@ export const Login = () => {
         backgroundImage: `url(${backgroundImg.src})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        overflowX: 'hidden',
+        maxWidth: '100vw',
       }}
     >
       <TopBar isLogin={true} />

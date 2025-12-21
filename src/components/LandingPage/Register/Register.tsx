@@ -444,6 +444,11 @@ export const Register = () => {
         backgroundImage: `url(${backgroundImg.src})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        overflowX: 'hidden',
+        [theme.breakpoints.down('sm')]: {
+          padding: '1rem',
+          width: '100vw',
+        },
       }}
     >
       <TopBar isRegister={true} />
@@ -453,6 +458,12 @@ export const Register = () => {
         gap={'1.5rem'}
         justifyContent={'center'}
         alignSelf={'center'}
+        sx={{
+          [theme.breakpoints.down('sm')]: {
+            width: '95%',
+            gap: '1rem',
+          },
+        }}
       >
         {step === 1 && (
           <div
@@ -463,15 +474,33 @@ export const Register = () => {
               flexDirection: 'column',
               padding: '1rem',
               borderRadius: '1rem',
+              width: '100%',
+              boxSizing: 'border-box',
             }}
           >
-            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+            <Typography
+              variant="h3"
+              color={theme.palette.neutrals.darkGrey}
+              fontWeight={700}
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '1.5rem',
+                },
+              }}
+            >
               Cadastre seu negócio 1/3
             </Typography>
             <Stack
               width={'60%'}
               gap={'1rem'}
-              sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                [theme.breakpoints.down('sm')]: {
+                  width: '100%',
+                },
+              }}
             >
               <Typography
                 variant="h6"
@@ -479,6 +508,12 @@ export const Register = () => {
                 textAlign="center"
                 width="200%"
                 fontSize="1.08rem"
+                sx={{
+                  [theme.breakpoints.down('sm')]: {
+                    width: '100%',
+                    fontSize: '0.95rem',
+                  },
+                }}
               >
                 Ganhe visibilidade, cadastre seu negócio no Experimenta São Chico
               </Typography>
@@ -560,12 +595,32 @@ export const Register = () => {
               flexDirection: 'column',
               padding: '1rem',
               borderRadius: '1rem',
+              width: '100%',
+              boxSizing: 'border-box',
             }}
           >
-            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+            <Typography
+              variant="h3"
+              color={theme.palette.neutrals.darkGrey}
+              fontWeight={700}
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '1.5rem',
+                },
+              }}
+            >
               Cadastre seu negócio 2/3
             </Typography>
-            <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
+            <Stack
+              width={'60%'}
+              gap={'1rem'}
+              sx={{
+                alignItems: 'center',
+                [theme.breakpoints.down('sm')]: {
+                  width: '100%',
+                },
+              }}
+            >
               <Stack
                 sx={{
                   display: 'flex',
@@ -754,6 +809,10 @@ export const Register = () => {
                   display: 'grid',
                   gridTemplateColumns: '49% 16.5% 31.5%',
                   gap: '0.4rem',
+                  [theme.breakpoints.down('sm')]: {
+                    gridTemplateColumns: '1fr',
+                    gap: '0.5rem',
+                  },
                 }}
               >
                 <Input
@@ -800,12 +859,32 @@ export const Register = () => {
               flexDirection: 'column',
               padding: '1rem',
               borderRadius: '1rem',
+              width: '100%',
+              boxSizing: 'border-box',
             }}
           >
-            <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+            <Typography
+              variant="h3"
+              color={theme.palette.neutrals.darkGrey}
+              fontWeight={700}
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '1.5rem',
+                },
+              }}
+            >
               Cadastre seu negócio 3/3
             </Typography>
-            <Stack width={'60%'} gap={'1rem'} sx={{ alignItems: 'center' }}>
+            <Stack
+              width={'60%'}
+              gap={'1rem'}
+              sx={{
+                alignItems: 'center',
+                [theme.breakpoints.down('sm')]: {
+                  width: '100%',
+                },
+              }}
+            >
               <Stack
                 sx={{
                   display: 'flex',

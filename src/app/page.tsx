@@ -10,6 +10,8 @@ export default function Home() {
         display: 'flex',
         height: 'fit-content',
         width: '100vw',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
         backgroundColor: theme.palette.customPrimaryShades[100],
       }}
     >

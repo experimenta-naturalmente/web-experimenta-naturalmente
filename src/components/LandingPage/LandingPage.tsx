@@ -11,7 +11,9 @@ export const LandingPage = () => {
       gap={'8rem'}
       sx={{
         paddingBottom: '2rem',
-        ['@media (max-width: 600px)'] : {
+        overflowX: 'hidden',
+        maxWidth: '100vw',
+        ['@media (max-width: 600px)']: {
           gap: '3rem',
         },
       }}

@@ -15,6 +15,8 @@ export const TopContent = () => {
         backgroundImage: `url(${backgroundImg.src})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        overflowX: 'hidden',
+        maxWidth: '100vw',
         [theme.breakpoints.down('sm')]: {
           height: '28rem',
           padding: '1rem',
