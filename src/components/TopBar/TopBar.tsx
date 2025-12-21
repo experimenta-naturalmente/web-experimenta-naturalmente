@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import Logo from '@/assets/ESCNLogo.svg';
+import Logo from '@/assets/NovoLogo.svg';
 
 type TopBarProps = { isRegister?: boolean; isLogin?: boolean };
 
@@ -30,7 +30,7 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
   return (
     <TopBarContainer>
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-        <Logo style={{ height: '2.5rem', width: 'auto', cursor: 'pointer' }} />
+        <Logo style={{ height: '6.8rem', width: 'auto', cursor: 'pointer' }} />
       </Link>
       <Box
         sx={{

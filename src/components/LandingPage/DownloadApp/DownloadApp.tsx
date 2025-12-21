@@ -9,7 +9,7 @@ import { AppDescription } from './AppDescription/AppDescription';
 export const DownloadApp = () => {
   const theme = useTheme();
   return (
-    <Stack width={'100%'} height={'100rem'} justifyContent={'space-between'}>
+    <Stack width={'100%'} height={'80rem'} justifyContent={'space-between'}>
       <AppDescription />
       <Stack gap={'4rem'} height={'20%'}>
         <AppCardList />

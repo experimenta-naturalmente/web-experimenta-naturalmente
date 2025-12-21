@@ -5,7 +5,7 @@ import { Project } from './Project/Project';
 
 export const LandingPage = () => {
   return (
-    <Stack height={'fit-content'} width={'100%'} gap={'12rem'}>
+    <Stack height={'fit-content'} width={'100%'} gap={'8rem'}>
       <TopContent />
       <DownloadApp />
       <Project />

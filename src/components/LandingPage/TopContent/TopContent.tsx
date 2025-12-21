@@ -9,7 +9,7 @@ export const TopContent = () => {
   return (
     <Stack
       width="100%"
-      height="75rem"
+      height="48rem"
       padding={'1.5rem'}
       sx={{
         backgroundImage: `url(${backgroundImg.src})`,
