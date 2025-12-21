@@ -1,6 +1,7 @@
 'use client';
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { TopBar } from '@/components/TopBar/TopBar';
+import Link from 'next/link';
 
 export default function ContatoPage() {
   const theme = useTheme();
@@ -19,7 +20,12 @@ export default function ContatoPage() {
         </Typography>
         <Typography variant="body1" color={theme.palette.neutrals.darkGrey}>
           Em breve adicionaremos um formulário de contato aqui. Enquanto isso, envie um email para
-          contato@example.com.
+          <Link
+            href="mailto:experimentanaturalmente@gmail.com"
+            style={{ textDecoration: 'underline', marginLeft: '0.25rem' }}
+          >
+            experimentanaturalmente@gmail.com
+          </Link>
         </Typography>
       </Stack>
     </Box>
