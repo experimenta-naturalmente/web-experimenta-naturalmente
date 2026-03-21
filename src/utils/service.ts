@@ -27,6 +27,9 @@ export type OpeningHourItem = {
 export type ExperiencePayload = {
   name: string;
   description?: string;
+  details?: string;
+  eventStart?: string;
+  eventEnd?: string;
   email?: string;
   cnpj?: string;
   categoryId?: string;

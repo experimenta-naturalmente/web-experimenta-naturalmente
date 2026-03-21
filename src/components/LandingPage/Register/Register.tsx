@@ -50,6 +50,9 @@ export const Register = () => {
   const [estEmail, setEstEmail] = useState('');
   const [estPhone, setEstPhone] = useState('');
   const [description, setDescription] = useState('');
+  const [eventDetails, setEventDetails] = useState('');
+  const [eventStart, setEventStart] = useState('');
+  const [eventEnd, setEventEnd] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [addressStreet, setAddressStreet] = useState('');
   const [addressNumber, setAddressNumber] = useState<string | number>('');
@@ -258,6 +261,17 @@ export const Register = () => {
     sun: 'sunday',
   };
 
+  const selectedCategoryName =
+    categories.find((category) => category.id === selectedCategoryId)?.name?.toLowerCase() ?? '';
+  const isEventCategory = selectedCategoryName.includes('evento');
+
+  const toIsoDateString = (value?: string) => {
+    if (!value) return undefined;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  };
+
   const handleCreateAccount = async () => {
     setError(null);
     if (!responsavel || !responsavelCpf || !email || !responsavelPhone || !password) {
@@ -368,7 +382,7 @@ export const Register = () => {
     try {
       const attachmentsPayload = attachments.map((a) => ({ type: 'image', url: a.base64 }));
 
-      const openingHours = openingHoursMap
+      const openingHours = !isEventCategory && openingHoursMap
         ? (Object.entries(openingHoursMap).map(([k, v]) => ({
             dayOfWeek: DAY_KEY_TO_NAME[k] ?? k,
             openingHour: v.open ?? '',
@@ -396,6 +410,13 @@ export const Register = () => {
         openingHours,
         tags,
         ownerId: createdUserId ?? undefined,
+        ...(isEventCategory
+          ? {
+              details: eventDetails,
+              eventStart: toIsoDateString(eventStart),
+              eventEnd: toIsoDateString(eventEnd),
+            }
+          : {}),
 
         ...(selectedCategoryId === hotelCategoryId && hotelType && { hotelType }),
         ...(selectedCategoryId === restaurantCategoryId && restaurantType && { restaurantType }),
@@ -912,10 +933,48 @@ export const Register = () => {
                 placeholder="Descrição"
                 onChange={(val) => setDescription(val)}
               />
-              <OpeningHoursInput
-                value={openingHoursMap}
-                onChange={(val) => setOpeningHoursMap(val)}
-              />
+
+              {isEventCategory && (
+                <>
+                  <Input
+                    icon={descriptionIcon}
+                    placeholder="Detalhes da programação"
+                    value={eventDetails}
+                    onChange={(val) => setEventDetails(val)}
+                  />
+                  <Stack
+                    sx={{
+                      width: '100%',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '0.4rem',
+                      [theme.breakpoints.down('sm')]: {
+                        gridTemplateColumns: '1fr',
+                      },
+                    }}
+                  >
+                    <Input
+                      placeholder="Início do evento"
+                      type="datetime-local"
+                      value={eventStart}
+                      onChange={(val) => setEventStart(val)}
+                    />
+                    <Input
+                      placeholder="Fim do evento"
+                      type="datetime-local"
+                      value={eventEnd}
+                      onChange={(val) => setEventEnd(val)}
+                    />
+                  </Stack>
+                </>
+              )}
+
+              {!isEventCategory && (
+                <OpeningHoursInput
+                  value={openingHoursMap}
+                  onChange={(val) => setOpeningHoursMap(val)}
+                />
+              )}
               <InputImages onChange={(atts) => setAttachments(atts)} />
               <InputTags
                 availableTags={tagsAvailable(selectedCategoryId)}

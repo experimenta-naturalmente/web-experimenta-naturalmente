@@ -43,6 +43,9 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
   const [estEmail, setEstEmail] = useState('');
   const [estPhone, setEstPhone] = useState('');
   const [description, setDescription] = useState('');
+  const [eventDetails, setEventDetails] = useState('');
+  const [eventStart, setEventStart] = useState('');
+  const [eventEnd, setEventEnd] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [addressStreet, setAddressStreet] = useState('');
   const [addressNumber, setAddressNumber] = useState<string | number>('');
@@ -104,6 +107,27 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
     sun: 'sunday',
   };
 
+  const toDateTimeLocalValue = (value?: string) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+      date.getHours(),
+    )}:${pad(date.getMinutes())}`;
+  };
+
+  const toIsoDateString = (value?: string) => {
+    if (!value) return undefined;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  };
+
+  const selectedCategoryName =
+    categories.find((category) => category.id === selectedCategoryId)?.name?.toLowerCase() ?? '';
+  const isEventCategory = selectedCategoryName.includes('evento');
+
   useEffect(() => {
     async function loadCategories() {
       try {
@@ -154,6 +178,9 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       setEstEmail(experience.email || '');
       setEstPhone(experience.phone || '');
       setDescription(experience.description || '');
+      setEventDetails(experience.details || '');
+      setEventStart(toDateTimeLocalValue(experience.eventStart));
+      setEventEnd(toDateTimeLocalValue(experience.eventEnd));
       setCnpj(experience.cnpj || '');
       setAddressStreet(experience.address?.street || '');
       setAddressNumber(experience.address?.number || '');
@@ -240,6 +267,9 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       setEstEmail('');
       setEstPhone('');
       setDescription('');
+      setEventDetails('');
+      setEventStart('');
+      setEventEnd('');
       setCnpj('');
       setAddressStreet('');
       setAddressNumber('');
@@ -280,7 +310,9 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
 
       // Usar horários originais se não foi modificado pelo usuário
       let openingHours;
-      if (isEdit && !openingHoursModified && originalOpeningHours) {
+      if (isEventCategory) {
+        openingHours = undefined;
+      } else if (isEdit && !openingHoursModified && originalOpeningHours) {
         // Mantém os horários originais se não foi alterado
         openingHours = originalOpeningHours;
       } else if (openingHoursMap) {
@@ -303,9 +335,16 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
         cnpj,
         categoryId: selectedCategoryId,
         address: { street: addressStreet, number: +addressNumber, zipCode: addressZip },
-        openingHours,
         tags: isEdit && !tagsModified ? originalTags : selectedTags,
         attachments: attachmentsPayload,
+        ...(openingHours ? { openingHours } : {}),
+        ...(isEventCategory
+          ? {
+              details: eventDetails,
+              eventStart: toIsoDateString(eventStart),
+              eventEnd: toIsoDateString(eventEnd),
+            }
+          : {}),
       };
 
       if (isEdit) {
@@ -425,6 +464,38 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
             onChange={(val) => setDescription(val)}
           />
 
+          {isEventCategory && (
+            <>
+              <Input
+                icon={descriptionIcon}
+                placeholder="Detalhes da programação"
+                value={eventDetails}
+                onChange={(val) => setEventDetails(val)}
+              />
+
+              <Stack
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '0.4rem',
+                }}
+              >
+                <Input
+                  placeholder="Início do evento"
+                  type="datetime-local"
+                  value={eventStart}
+                  onChange={(val) => setEventStart(val)}
+                />
+                <Input
+                  placeholder="Fim do evento"
+                  type="datetime-local"
+                  value={eventEnd}
+                  onChange={(val) => setEventEnd(val)}
+                />
+              </Stack>
+            </>
+          )}
+
           <Stack
             sx={{
               display: 'grid',
@@ -463,13 +534,15 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
             }}
           />
 
-          <OpeningHoursInput 
-            value={openingHoursMap} 
-            onChange={(val) => {
-              setOpeningHoursMap(val);
-              setOpeningHoursModified(true);
-            }} 
-          />
+          {!isEventCategory && (
+            <OpeningHoursInput
+              value={openingHoursMap}
+              onChange={(val) => {
+                setOpeningHoursMap(val);
+                setOpeningHoursModified(true);
+              }}
+            />
+          )}
 
           <InputImages onChange={(atts) => setAttachments(atts)} />
 
