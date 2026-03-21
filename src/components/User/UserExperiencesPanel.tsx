@@ -32,6 +32,8 @@ import {
 } from '@/utils/service';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export const UserExperiencesPanel = () => {
   const theme = useTheme();
@@ -46,6 +48,8 @@ export const UserExperiencesPanel = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [experienceToDelete, setExperienceToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -71,22 +75,41 @@ export const UserExperiencesPanel = () => {
   useEffect(() => {
     if (user) {
       loadUserExperiences();
+      loadCategories();
     }
   }, [user]);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredExperiences(experiences);
-    } else {
-      const filtered = experiences.filter(
-        (exp) =>
-          exp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exp.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exp.email?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-      setFilteredExperiences(filtered);
+    const normalizedSearch = searchTerm.toLowerCase();
+    const filtered = experiences.filter((exp) => {
+      const matchesType = selectedType === 'all' || exp.categoryId === selectedType;
+      const matchesSearch =
+        searchTerm.trim() === '' ||
+        exp.name.toLowerCase().includes(normalizedSearch) ||
+        exp.description?.toLowerCase().includes(normalizedSearch) ||
+        exp.details?.toLowerCase().includes(normalizedSearch) ||
+        exp.email?.toLowerCase().includes(normalizedSearch);
+
+      return matchesType && matchesSearch;
+    });
+    setFilteredExperiences(filtered);
+  }, [searchTerm, selectedType, experiences]);
+
+  const loadCategories = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'experienceCategories'));
+      const loadedCategories = snapshot.docs.map((categoryDoc) => {
+        const data = categoryDoc.data();
+        return {
+          id: categoryDoc.id,
+          name: data.name ?? data.title ?? categoryDoc.id,
+        };
+      });
+      setCategories(loadedCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
     }
-  }, [searchTerm, experiences]);
+  };
 
   const loadUserExperiences = async () => {
     if (!user) return;
@@ -253,6 +276,33 @@ export const UserExperiencesPanel = () => {
             },
           }}
         />
+
+        <TextField
+          select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          SelectProps={{ native: true }}
+          sx={{
+            backgroundColor: theme.palette.neutrals.formsWhite,
+            borderRadius: '0.5rem',
+            maxWidth: '320px',
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: theme.palette.customPrimaryShades[400],
+              },
+              '&:hover fieldset': {
+                borderColor: theme.palette.customPrimaryShades[500],
+              },
+            },
+          }}
+        >
+          <option value="all">Todos os tipos</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </TextField>
 
         {/* Experiences Grid */}
         {filteredExperiences.length === 0 ? (

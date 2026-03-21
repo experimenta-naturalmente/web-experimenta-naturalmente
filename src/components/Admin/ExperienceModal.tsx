@@ -351,11 +351,26 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
         experienceData.id = experience.id;
       }
 
+      const estimatedBytes = new TextEncoder().encode(JSON.stringify(experienceData)).length;
+      if (estimatedBytes > 950000) {
+        alert(
+          'O conteúdo da experiência está muito grande para o banco de dados. Reduza a quantidade/tamanho das imagens e tente novamente.',
+        );
+        return;
+      }
+
       await onSave(experienceData);
       onClose();
     } catch (e) {
       console.error('Error saving experience:', e);
-      alert('Erro ao salvar experiência');
+      const message = e instanceof Error ? e.message : String(e);
+      if (message.includes('exceeds the maximum allowed size')) {
+        alert(
+          'O documento excedeu 1MB no banco de dados. Reduza a quantidade/tamanho das imagens para salvar.',
+        );
+      } else {
+        alert('Erro ao salvar experiência');
+      }
     } finally {
       setLoading(false);
     }

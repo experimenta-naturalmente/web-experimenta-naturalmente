@@ -7,6 +7,8 @@ import AddIcon from '@mui/icons-material/Add';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 type Attachment = {
   file: File;
@@ -18,6 +20,11 @@ export default function InputImages({
 }: {
   onChange?: (attachments: { file: File; base64: string }[]) => void;
 }) {
+  const MAX_IMAGES = 6;
+  const MAX_FILE_BYTES = 5 * 1024 * 1024;
+  const MAX_DIMENSION = 1600;
+  const TARGET_BASE64_SIZE = 180 * 1024;
+
   const theme = useTheme();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -34,34 +41,88 @@ export default function InputImages({
     setToastMessage(message);
     setToastSeverity(severity);
     setToastOpen(true);
-    console.log(`Toast open? ${toastOpen}: ${toastSeverity.toUpperCase()}: ${toastMessage}`);
+  };
+
+  const base64SizeInBytes = (base64: string) => {
+    const data = base64.split(',')[1] ?? '';
+    return Math.ceil((data.length * 3) / 4);
+  };
+
+  const loadImage = (src: string) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+
+  const compressImageToBase64 = async (file: File) => {
+    const sourceDataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const image = await loadImage(sourceDataUrl);
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(image.width, image.height));
+    const targetWidth = Math.max(1, Math.round(image.width * scale));
+    const targetHeight = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Não foi possível processar a imagem');
+    }
+
+    ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+    let quality = 0.85;
+    let output = canvas.toDataURL('image/jpeg', quality);
+
+    while (base64SizeInBytes(output) > TARGET_BASE64_SIZE && quality > 0.45) {
+      quality -= 0.1;
+      output = canvas.toDataURL('image/jpeg', quality);
+    }
+
+    return output;
   };
 
   const openFileDialog = () => {
     inputRef.current?.click();
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
-    Array.from(files).forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Imagem muito grande! O limite é 5MB.', 'warning');
-        return;
+    let nextAttachments = [...attachments];
+
+    for (const file of Array.from(files)) {
+      if (nextAttachments.length >= MAX_IMAGES) {
+        showToast(`Limite de ${MAX_IMAGES} imagens por experiência.`, 'warning');
+        break;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64 = e.target?.result as string;
-        setAttachments((prev) => {
-          const next = [...prev, { file, base64 }];
-          onChange?.(next);
-          return next;
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+      if (file.size > MAX_FILE_BYTES) {
+        showToast('Imagem muito grande. O limite por arquivo é 5MB.', 'warning');
+        continue;
+      }
+
+      try {
+        const base64 = await compressImageToBase64(file);
+        nextAttachments = [...nextAttachments, { file, base64 }];
+      } catch {
+        showToast('Falha ao processar uma imagem. Tente outra.', 'error');
+      }
+    }
+
+    setAttachments(nextAttachments);
+    onChange?.(nextAttachments);
+
     if (event.target) event.target.value = '';
   };
 
@@ -190,6 +251,17 @@ export default function InputImages({
           </Box>
         </Box>
       )}
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={3000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setToastOpen(false)} severity={toastSeverity} sx={{ width: '100%' }}>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

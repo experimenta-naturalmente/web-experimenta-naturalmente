@@ -421,6 +421,16 @@ export const Register = () => {
         ...(selectedCategoryId === hotelCategoryId && hotelType && { hotelType }),
         ...(selectedCategoryId === restaurantCategoryId && restaurantType && { restaurantType }),
       };
+
+      const estimatedBytes = new TextEncoder().encode(JSON.stringify(finalExperience)).length;
+      if (estimatedBytes > 950000) {
+        const msg =
+          'A experiência está grande demais para salvar. Reduza a quantidade/tamanho das imagens e tente novamente.';
+        setError(msg);
+        showToast(msg, 'error');
+        return;
+      }
+
       console.log('Final experience payload: ', finalExperience);
       if (!createdUserId) {
         const msg = 'Usuário não encontrado. Volte ao passo 1.';
@@ -435,11 +445,17 @@ export const Register = () => {
       showToast('Experiência criada com sucesso!', 'success');
       setTimeout(() => router.push('/'), 800);
     } catch (e) {
-      setError(
+      const errorMessage =
         typeof e === 'object' && e !== null && 'message' in e
           ? ((e as { message?: string }).message ?? String(e))
-          : String(e),
-      );
+          : String(e);
+
+      const msg = errorMessage.includes('exceeds the maximum allowed size')
+        ? 'O documento excedeu 1MB no Firestore. Reduza as imagens para continuar.'
+        : errorMessage;
+
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setLoading(false);
     }

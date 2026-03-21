@@ -98,6 +98,23 @@ export const ExperienceCard = ({ experience, onEdit, onDelete }: ExperienceCardP
       .join(' | ');
   };
 
+  const formatEventDate = (value?: string) => {
+    if (!value) return null;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const isEventType =
+    (categoryName ?? '').toLowerCase().includes('evento') ||
+    Boolean(experience.eventStart || experience.eventEnd || experience.details);
+
   return (
     <Card
       sx={{
@@ -216,6 +233,43 @@ export const ExperienceCard = ({ experience, onEdit, onDelete }: ExperienceCardP
             >
               {experience.description}
             </Typography>
+          )}
+
+          {isEventType && (experience.details || experience.eventStart || experience.eventEnd) && (
+            <Stack spacing={0.5}>
+              <Typography
+                variant="body2"
+                color={theme.palette.customPrimaryShades[700]}
+                fontWeight={600}
+              >
+                Dados do Evento
+              </Typography>
+              {experience.eventStart && (
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  Início: {formatEventDate(experience.eventStart)}
+                </Typography>
+              )}
+              {experience.eventEnd && (
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  Fim: {formatEventDate(experience.eventEnd)}
+                </Typography>
+              )}
+              {experience.details && (
+                <Typography
+                  variant="body2"
+                  color={theme.palette.neutrals.mediumGrey}
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {experience.details}
+                </Typography>
+              )}
+            </Stack>
           )}
 
           <Divider />

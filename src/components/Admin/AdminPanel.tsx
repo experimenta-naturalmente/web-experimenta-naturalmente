@@ -32,6 +32,8 @@ import {
 } from '@/utils/service';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export const AdminPanel = () => {
   const theme = useTheme();
@@ -46,6 +48,8 @@ export const AdminPanel = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [experienceToDelete, setExperienceToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -75,21 +79,41 @@ export const AdminPanel = () => {
 
   useEffect(() => {
     loadExperiences();
+    loadCategories();
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredExperiences(experiences);
-    } else {
-      const filtered = experiences.filter(
-        (exp) =>
-          exp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exp.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          exp.email?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-      setFilteredExperiences(filtered);
+    const normalizedSearch = searchTerm.toLowerCase();
+    const filtered = experiences.filter((exp) => {
+      const matchesType = selectedType === 'all' || exp.categoryId === selectedType;
+      const matchesSearch =
+        searchTerm.trim() === '' ||
+        exp.name.toLowerCase().includes(normalizedSearch) ||
+        exp.description?.toLowerCase().includes(normalizedSearch) ||
+        exp.details?.toLowerCase().includes(normalizedSearch) ||
+        exp.email?.toLowerCase().includes(normalizedSearch);
+
+      return matchesType && matchesSearch;
+    });
+
+    setFilteredExperiences(filtered);
+  }, [searchTerm, selectedType, experiences]);
+
+  const loadCategories = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'experienceCategories'));
+      const loadedCategories = snapshot.docs.map((categoryDoc) => {
+        const data = categoryDoc.data();
+        return {
+          id: categoryDoc.id,
+          name: data.name ?? data.title ?? categoryDoc.id,
+        };
+      });
+      setCategories(loadedCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
     }
-  }, [searchTerm, experiences]);
+  };
 
   const loadExperiences = async () => {
     try {
@@ -245,6 +269,27 @@ export const AdminPanel = () => {
               },
             }}
           />
+
+          <TextField
+            select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            SelectProps={{ native: true }}
+            sx={{
+              minWidth: { xs: '100%', sm: '240px' },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '28px',
+                backgroundColor: theme.palette.neutrals.formsWhite,
+              },
+            }}
+          >
+            <option value="all">Todos os tipos</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </TextField>
 
           <GradientRoundButton
             onClick={handleCreate}
