@@ -5,6 +5,7 @@ export const TopBarContainer = styled(Box)(({ theme }) => ({
   alignItems: 'center',
   justifyContent: 'space-between',
   width: '100%',
+  height: '4rem',
   position: 'fixed',
   padding: '0.25rem 1rem', // padding top e bottom
   top: 0,
