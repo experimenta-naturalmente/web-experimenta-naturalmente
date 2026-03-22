@@ -6,6 +6,7 @@ export const TopBarContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'space-between',
   width: '100%',
   position: 'fixed',
+  padding: '0.25rem 1rem', // padding top e bottom
   top: 0,
   left: 0,
   zIndex: 1100, // acima do conteúdo padrão
@@ -15,8 +16,9 @@ export const TopBarContainer = styled(Box)(({ theme }) => ({
   borderBottom: '1px solid rgba(0,0,0,0.18)',
   boxShadow: '0 2px 16px 0 rgba(0,0,0,0.10)',
   transition: 'background 0.3s',
-  [theme.breakpoints.down('sm')]: {
-    width: '100vw',
-    padding: '0.25rem 0.125rem',
+  // Suporte a dark mode
+  [theme.palette.mode === 'dark' ? '&' : '']: {
+    background: 'rgba(30,30,30,0.6)',
+    borderBottom: '1px solid rgba(30,30,30,0.3)',
   },
 }));
