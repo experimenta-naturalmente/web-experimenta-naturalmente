@@ -281,13 +281,20 @@ export const UserExperiencesPanel = () => {
               },
               '& .MuiInputBase-input': {
                 fontSize: '0.95rem',
-                lineHeight: '2.75rem',
-                paddingTop: 0,
-                paddingBottom: 0,
+                textAlign: 'center',
+                justifyContent: 'center',
                 color:
                   selectedType === 'all'
                     ? theme.palette.neutrals.mediumGrey
                     : theme.palette.neutrals.darkGrey,
+              },
+              '& .MuiNativeSelect-select': {
+                height: '100%',
+                boxSizing: 'border-box',
+                paddingTop: 0,
+                paddingBottom: 0,
+                paddingLeft: '14px',
+                paddingRight: '32px',
               },
             }}
           >
