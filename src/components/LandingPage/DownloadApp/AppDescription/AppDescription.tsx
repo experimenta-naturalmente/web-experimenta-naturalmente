@@ -10,6 +10,7 @@ export const AppDescription = () => {
   const theme = useTheme();
   return (
     <Stack
+      id="baixe-o-app"
       width={'100%'}
       height={'70%'}
       justifyContent={'center'}

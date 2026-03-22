@@ -48,9 +48,9 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
       >
         {/* Desktop navigation */}
         <ButtonGroup sx={{ gap: '1rem', display: { xs: 'none', sm: 'flex' } }}>
-          <NavigationButton label="Home" href="/" />
-          <NavigationButton label="Projeto" href="/projeto" />
-          <NavigationButton label="Baixe o App" href="/download" />
+          <NavigationButton label="Home" href="/#home" />
+          <NavigationButton label="Projeto" href="/#projeto" />
+          <NavigationButton label="Baixe o App" href="/#baixe-o-app" />
           <NavigationButton label="Contato" href="/contato" />
         </ButtonGroup>
 
@@ -106,17 +106,17 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
           <Box sx={{ width: 260, padding: '1rem' }} role="presentation" onClick={() => setOpen(false)}>
             <List>
               <ListItem disablePadding>
-                <ListItemButton component={Link} href="/">
+                <ListItemButton component={Link} href="/#home">
                   <ListItemText primary="Home" />
                 </ListItemButton>
               </ListItem>
               <ListItem disablePadding>
-                <ListItemButton component={Link} href="/projeto">
+                <ListItemButton component={Link} href="/#projeto">
                   <ListItemText primary="Projeto" />
                 </ListItemButton>
               </ListItem>
               <ListItem disablePadding>
-                <ListItemButton component={Link} href="/download">
+                <ListItemButton component={Link} href="/#baixe-o-app">
                   <ListItemText primary="Baixe o App" />
                 </ListItemButton>
               </ListItem>

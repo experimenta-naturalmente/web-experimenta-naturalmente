@@ -8,6 +8,7 @@ export const TopContent = () => {
   const theme = useTheme();
   return (
     <Stack
+      id="home"
       width="100%"
       height="48rem"
       padding={'1.5rem'}
