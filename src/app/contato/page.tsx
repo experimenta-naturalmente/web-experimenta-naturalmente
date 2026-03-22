@@ -9,7 +9,7 @@ import {
   CircularProgress,
   Link as MuiLink,
 } from '@mui/material';
-import backgroundImg from '@/assets/lago-sao-bernardo.jpg';
+// Imagem de fundo agora vem de /public
 import mailIcon from '@/assets/MailIcon.png';
 import Input from '@/components/Inputs/Input/Input';
 import { FormEvent, useMemo, useState } from 'react';
@@ -23,6 +23,7 @@ type ContactFormData = {
   mensagem: string;
 };
 
+export default function ContatoPage() {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -105,7 +106,7 @@ type ContactFormData = {
       height="100vh"
       padding={isSmallScreen ? '1rem' : '1.5rem'}
       sx={{
-        backgroundImage: `url(${backgroundImg.src})`,
+        backgroundImage: 'url(/lago-sao-bernardo.jpg)',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         overflowX: 'hidden',
