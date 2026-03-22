@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Stack,
   Typography,
@@ -15,7 +15,6 @@ import {
   TextField,
   InputAdornment,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import backgroundImg from '@/assets/BackgroundRegister.png';
 import { TopBar } from '@/components/TopBar/TopBar';
@@ -261,7 +260,7 @@ export const UserExperiencesPanel = () => {
                 '& .MuiOutlinedInput-notchedOutline': {
                   border: '1px solid ' + theme.palette.neutrals.mediumGrey,
                 },
-                height: 'fit-content',
+                height: '2.75rem',
                 width: { xs: '100%', sm: '600px' },
                 fontSize: '1.2rem',
               },
@@ -278,6 +277,7 @@ export const UserExperiencesPanel = () => {
               '& .MuiOutlinedInput-root': {
                 borderRadius: '28px',
                 backgroundColor: theme.palette.neutrals.formsWhite,
+                height: '2.75rem',
               },
             }}
           >
@@ -291,7 +291,6 @@ export const UserExperiencesPanel = () => {
 
           <GradientRoundButton
             onClick={handleCreate}
-            startIcon={<AddIcon />}
             sx={{ height: '2.75rem', px: 3, fontWeight: 500, fontSize: '0.95rem' }}
           >
             Nova Experiência
