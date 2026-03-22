@@ -264,7 +264,7 @@ export const AdminPanel = () => {
                 },
                 height: '2.75rem',
                 width: { xs: '100%', sm: '600px' },
-                fontSize: '1.2rem',
+                fontSize: '0.95rem',
               },
             }}
           />
@@ -281,9 +281,16 @@ export const AdminPanel = () => {
                 backgroundColor: theme.palette.neutrals.formsWhite,
                 height: '2.75rem',
               },
+              '& .MuiInputBase-input': {
+                fontSize: '0.95rem',
+                color:
+                  selectedType === 'all'
+                    ? theme.palette.neutrals.mediumGrey
+                    : theme.palette.neutrals.darkGrey,
+              },
             }}
           >
-            <option value="all">Todos os tipos</option>
+            <option value="all">Todas as categorias</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
