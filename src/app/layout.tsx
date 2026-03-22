@@ -14,9 +14,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <head />
-      <body
-        className={`${rasa.className} ${poppins.className}`}
-        style={{ overflowX: 'hidden', margin: 0, padding: 0 }}
+        <body
+          className={`${rasa.className} ${poppins.className}`}
+          style={{ overflowX: 'hidden', margin: 0, padding: 0, paddingTop: '3rem' }}
       >
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={theme}>
