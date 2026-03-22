@@ -281,6 +281,9 @@ export const UserExperiencesPanel = () => {
               },
               '& .MuiInputBase-input': {
                 fontSize: '0.95rem',
+                lineHeight: '2.75rem',
+                paddingTop: 0,
+                paddingBottom: 0,
                 color:
                   selectedType === 'all'
                     ? theme.palette.neutrals.mediumGrey
