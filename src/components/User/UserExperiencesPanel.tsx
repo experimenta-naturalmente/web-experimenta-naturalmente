@@ -3,6 +3,7 @@ import {
   Stack,
   Typography,
   useTheme,
+  Grid,
   CircularProgress,
   Alert,
   Snackbar,
@@ -13,7 +14,6 @@ import {
   Button,
   TextField,
   InputAdornment,
-  Box,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
@@ -162,17 +162,16 @@ export const UserExperiencesPanel = () => {
     if (!user) return;
 
     try {
-      if (selectedExperience) {
-        // Atualizar experiência existente
-        await updateExperience(selectedExperience.id, experienceData);
+      if (experienceData.id) {
+        const { id, ...updateData } = experienceData;
+        await updateExperience(id, updateData);
         showToast('Experiência atualizada com sucesso', 'success');
       } else {
-        // Criar nova experiência
         await createExperienceOnly(experienceData as ExperiencePayload, user.uid);
         showToast('Experiência criada com sucesso', 'success');
       }
+      await loadUserExperiences();
       setModalOpen(false);
-      loadUserExperiences();
     } catch (error) {
       console.error('Error saving experience:', error);
       showToast('Erro ao salvar experiência', 'error');
@@ -192,7 +191,7 @@ export const UserExperiencesPanel = () => {
           backgroundRepeat: 'no-repeat',
         }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: theme.palette.customPrimaryShades[600] }} />
       </Stack>
     );
   }
@@ -205,17 +204,29 @@ export const UserExperiencesPanel = () => {
     <Stack
       width="100%"
       minHeight="100vh"
-      padding="1.5rem"
+      padding={'1.5rem'}
       sx={{
         backgroundImage: `url(${backgroundImg.src})`,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
       }}
     >
-      <TopBar isLogin={false} />
+      <TopBar />
 
-      <Stack width="100%" gap="2rem" mt={4}>
-        {/* Header */}
+      <Stack
+        width="90%"
+        maxWidth="1400px"
+        alignSelf="center"
+        mt={4}
+        spacing={3}
+        sx={{
+          backgroundColor: theme.palette.neutrals.formsWhite,
+          borderRadius: '1rem',
+          padding: '2rem',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        }}
+      >
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -223,143 +234,93 @@ export const UserExperiencesPanel = () => {
           flexWrap="wrap"
           gap={2}
         >
-          <Typography
-            variant="h4"
-            color={theme.palette.neutrals.darkGrey}
-            fontWeight={700}
-            sx={{
-              backgroundColor: theme.palette.neutrals.formsWhite,
-              padding: '1rem 2rem',
-              borderRadius: '1rem',
-            }}
-          >
+          <Typography variant="h3" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
             Minhas Experiências
           </Typography>
+        </Stack>
+
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          justifyContent="space-evenly"
+          alignItems="center"
+          gap={2}
+        >
+          <TextField
+            placeholder="Buscar experiências..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
+                </InputAdornment>
+              ),
+              sx: {
+                backgroundColor: theme.palette.neutrals.formsWhite,
+                borderRadius: '28px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: '1px solid ' + theme.palette.neutrals.mediumGrey,
+                },
+                height: 'fit-content',
+                width: { xs: '100%', sm: '600px' },
+                fontSize: '1.2rem',
+              },
+            }}
+          />
+
+          <TextField
+            select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            SelectProps={{ native: true }}
+            sx={{
+              minWidth: { xs: '100%', sm: '240px' },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '28px',
+                backgroundColor: theme.palette.neutrals.formsWhite,
+              },
+            }}
+          >
+            <option value="all">Todos os tipos</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </TextField>
 
           <GradientRoundButton
-            startIcon={<AddIcon />}
             onClick={handleCreate}
-            sx={{
-              height: '3rem',
-              fontWeight: 600,
-              fontSize: '1rem',
-              paddingX: '2rem',
-            }}
+            startIcon={<AddIcon />}
+            sx={{ height: '2.75rem', px: 3, fontWeight: 500, fontSize: '0.95rem' }}
           >
             Nova Experiência
           </GradientRoundButton>
         </Stack>
 
-        {/* Search Bar */}
-        <TextField
-          placeholder="Buscar experiências..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            backgroundColor: theme.palette.neutrals.formsWhite,
-            borderRadius: '0.5rem',
-            maxWidth: '500px',
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: theme.palette.customPrimaryShades[400],
-              },
-              '&:hover fieldset': {
-                borderColor: theme.palette.customPrimaryShades[500],
-              },
-            },
-          }}
-        />
-
-        <TextField
-          select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-          SelectProps={{ native: true }}
-          sx={{
-            backgroundColor: theme.palette.neutrals.formsWhite,
-            borderRadius: '0.5rem',
-            maxWidth: '320px',
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: theme.palette.customPrimaryShades[400],
-              },
-              '&:hover fieldset': {
-                borderColor: theme.palette.customPrimaryShades[500],
-              },
-            },
-          }}
-        >
-          <option value="all">Todos os tipos</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </TextField>
-
-        {/* Experiences Grid */}
-        {filteredExperiences.length === 0 ? (
-          <Stack
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              backgroundColor: theme.palette.neutrals.formsWhite,
-              padding: '3rem',
-              borderRadius: '1rem',
-              minHeight: '300px',
-            }}
-          >
+        {filteredExperiences.length === 0 && !loading && (
+          <Stack alignItems="center" py={8}>
             <Typography variant="h6" color={theme.palette.neutrals.mediumGrey}>
               {searchTerm
                 ? 'Nenhuma experiência encontrada'
-                : 'Você ainda não cadastrou nenhuma experiência'}
+                : 'Nenhuma experiência cadastrada ainda'}
             </Typography>
-            {!searchTerm && (
-              <GradientRoundButton
-                startIcon={<AddIcon />}
-                onClick={handleCreate}
-                sx={{
-                  mt: 2,
-                  height: '2.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                Cadastrar Primeira Experiência
-              </GradientRoundButton>
-            )}
           </Stack>
-        ) : (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: 'repeat(2, 1fr)',
-                md: 'repeat(3, 1fr)',
-              },
-              gap: 3,
-            }}
-          >
-            {filteredExperiences.map((experience) => (
+        )}
+
+        <Grid container spacing={3}>
+          {filteredExperiences.map((experience) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={experience.id}>
               <ExperienceCard
-                key={experience.id}
                 experience={experience}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
-            ))}
-          </Box>
-        )}
+            </Grid>
+          ))}
+        </Grid>
       </Stack>
 
-      {/* Experience Modal */}
       <ExperienceModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -367,29 +328,25 @@ export const UserExperiencesPanel = () => {
         experience={selectedExperience}
       />
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         PaperProps={{
-          sx: {
-            borderRadius: '1rem',
-            padding: '1rem',
-          },
+          sx: { borderRadius: '1rem' },
         }}
       >
         <DialogTitle>
-          <Typography variant="h6" fontWeight={600}>
-            Confirmar Exclusão
+          <Typography variant="h5" fontWeight={600}>
+            Confirmar exclusão
           </Typography>
         </DialogTitle>
         <DialogContent>
           <Typography>Tem certeza que deseja deletar esta experiência?</Typography>
-          <Typography color={theme.palette.error.main} sx={{ mt: 1 }}>
+          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
             Esta ação não pode ser desfeita.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ padding: '1rem' }}>
+        <DialogActions sx={{ p: 2 }}>
           <Button
             onClick={() => setDeleteDialogOpen(false)}
             sx={{ color: theme.palette.neutrals.mediumGrey }}
@@ -400,14 +357,13 @@ export const UserExperiencesPanel = () => {
             onClick={confirmDelete}
             variant="contained"
             color="error"
-            sx={{ fontWeight: 600 }}
+            sx={{ borderRadius: '8px' }}
           >
             Deletar
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Toast Notification */}
       <Snackbar
         open={toastOpen}
         autoHideDuration={4000}
