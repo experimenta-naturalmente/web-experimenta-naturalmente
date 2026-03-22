@@ -1,15 +1,17 @@
 'use client';
 import {
   Alert,
-  Box,
-  CircularProgress,
-  Paper,
   Snackbar,
   Stack,
-  TextField,
   Typography,
+  useMediaQuery,
   useTheme,
+  CircularProgress,
+  Link as MuiLink,
 } from '@mui/material';
+import backgroundImg from '@/assets/lago-sao-bernardo.jpg';
+import mailIcon from '@/assets/MailIcon.png';
+import Input from '@/components/Inputs/Input/Input';
 import { FormEvent, useMemo, useState } from 'react';
 import { TopBar } from '@/components/TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
@@ -21,8 +23,8 @@ type ContactFormData = {
   mensagem: string;
 };
 
-export default function ContatoPage() {
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [formData, setFormData] = useState<ContactFormData>({
     nome: '',
@@ -32,9 +34,7 @@ export default function ContatoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
-    'success',
-  );
+  const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success');
 
   const isEmailValid = useMemo(() => {
     if (!formData.email) return true;
@@ -100,97 +100,131 @@ export default function ContatoPage() {
   };
 
   return (
-    <Box
+    <Stack
+      width="100%"
+      height="100vh"
+      padding={isSmallScreen ? '1rem' : '1.5rem'}
       sx={{
-        width: '100vw',
-        minHeight: '100vh',
-        backgroundColor: theme.palette.customPrimaryShades[100],
+        backgroundImage: `url(${backgroundImg.src})`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        overflowX: 'hidden',
+        maxWidth: '100vw',
       }}
     >
       <TopBar />
-      <Stack p={{ xs: 2.5, md: 4 }} gap={2} alignItems="center">
-        <Typography variant="h2" color={theme.palette.customPrimaryShades[600]}>
-          Contato
-        </Typography>
 
-        <Paper
-          component="form"
-          onSubmit={handleSubmit}
-          elevation={0}
-          sx={{
+      <Stack
+        width={isSmallScreen ? '90%' : '45%'}
+        height="90%"
+        gap={isSmallScreen ? '1rem' : '1.5rem'}
+        justifyContent="center"
+        alignSelf="center"
+      >
+        <div
+          style={{
+            display: 'flex',
+            backgroundColor: theme.palette.neutrals.formsWhite,
+            alignItems: 'center',
+            flexDirection: 'column',
+            padding: isSmallScreen ? '1rem' : '1.5rem',
+            borderRadius: '1rem',
             width: '100%',
-            maxWidth: '42rem',
-            borderRadius: '1.25rem',
-            p: { xs: 2, md: 3 },
-            backgroundColor: theme.palette.neutrals.baseWhite,
-            border: `1px solid ${theme.palette.customPrimaryShades[200]}`,
-            boxShadow: `0 16px 36px ${theme.palette.customPrimaryShades[200]}`,
+            boxSizing: 'border-box',
           }}
         >
-          <Stack gap={2.5}>
-            <Typography variant="body1" color={theme.palette.customPrimaryShades[600]}>
-              Envie sua mensagem para nossa equipe.
+          <Typography
+            variant={isSmallScreen ? 'h4' : 'h3'}
+            color={theme.palette.neutrals.darkGrey}
+            fontWeight={700}
+            textAlign="center"
+          >
+            Fale com a equipe
+          </Typography>
+
+          <Stack
+            width="100%"
+            gap={isSmallScreen ? '0.75rem' : '1rem'}
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 1 }}
+          >
+            <Typography
+              variant="h6"
+              color={theme.palette.neutrals.darkGrey}
+              textAlign="center"
+              sx={{
+                width: isSmallScreen ? '100%' : '80%',
+                fontSize: isSmallScreen ? '1rem' : '1.08rem',
+              }}
+            >
+              Envie sua mensagem para nossa equipe do Experimenta São Chico
             </Typography>
 
-            <TextField
-              label="Nome"
-              placeholder="Seu nome"
-              fullWidth
-              value={formData.nome}
-              onChange={(event) => handleChange('nome', event.target.value)}
-              required
-            />
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <Stack
+                spacing={2}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <Input
+                  icon={mailIcon}
+                  placeholder="Nome"
+                  value={formData.nome}
+                  onChange={(e) => handleChange('nome', e)}
+                  sx={{ width: '100%' }}
+                />
+                <Input
+                  icon={mailIcon}
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e)}
+                  sx={{ width: '100%' }}
+                />
+                <Input
+                  placeholder="Mensagem"
+                  value={formData.mensagem}
+                  onChange={(e) => handleChange('mensagem', e)}
+                  sx={{ width: '100%' }}
+                />
 
-            <TextField
-              label="Email"
-              placeholder="seuemail@exemplo.com"
-              type="email"
-              fullWidth
-              value={formData.email}
-              onChange={(event) => handleChange('email', event.target.value)}
-              required
-              error={!isEmailValid}
-              helperText={!isEmailValid ? 'Email invalido.' : ' '}
-            />
-
-            <TextField
-              label="Mensagem"
-              placeholder="Digite sua mensagem"
-              multiline
-              minRows={5}
-              fullWidth
-              value={formData.mensagem}
-              onChange={(event) => handleChange('mensagem', event.target.value)}
-              required
-            />
-
-            <Box>
-              <GradientRoundButton type="submit" disabled={isSubmitting} sx={{ px: 3, py: 1 }}>
-                {isSubmitting ? (
-                  <>
-                    <CircularProgress
-                      size={18}
-                      sx={{ color: theme.palette.neutrals.baseWhite, mr: 1 }}
-                    />
-                    Enviando...
-                  </>
-                ) : (
-                  'Enviar'
-                )}
-              </GradientRoundButton>
-            </Box>
+                <GradientRoundButton
+                  type="submit"
+                  disabled={isSubmitting}
+                  sx={{
+                    width: isSmallScreen ? '100%' : '15rem',
+                    height: isSmallScreen ? '3rem' : '2.5rem',
+                    fontWeight: 500,
+                    fontSize: isSmallScreen ? '1rem' : '0.9rem',
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <CircularProgress size={18} sx={{ color: theme.palette.neutrals.baseWhite, mr: 1 }} />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Enviar'
+                  )}
+                </GradientRoundButton>
+              </Stack>
+            </form>
 
             <Typography variant="body3" color={theme.palette.neutrals.darkGrey}>
               Se preferir, envie direto para
-              <Link
+              <MuiLink
                 href="mailto:experimentanaturalmente@gmail.com"
-                style={{ textDecoration: 'underline', marginLeft: '0.25rem' }}
+                underline="hover"
+                sx={{ ml: 0.5 }}
               >
                 experimentanaturalmente@gmail.com
-              </Link>
+              </MuiLink>
             </Typography>
           </Stack>
-        </Paper>
+        </div>
       </Stack>
 
       <Snackbar
@@ -203,6 +237,6 @@ export default function ContatoPage() {
           {toastMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </Stack>
   );
 }
