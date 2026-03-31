@@ -1,4 +1,4 @@
-import { Box, ButtonGroup, Typography, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { Box, ButtonGroup, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import React from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TopBarContainer } from './TopBar.style';
@@ -6,6 +6,7 @@ import { NavigationButton } from './NavigationButton/NavigationButton';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import LogoutIcon from '@mui/icons-material/Logout';
 import BusinessIcon from '@mui/icons-material/Business';
+import PlaceIcon from '@mui/icons-material/Place';
 import { ColoredRoundButton, LightRoundButton } from '../UI/Buttons/RoundButton.style';
 import Link from 'next/link';
 import { useAuth } from '@/lib/useAuth';
@@ -58,12 +59,20 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
           <>
             {/* Usuário logado */}
             {isAdmin ? (
-              <Link href="/admin" style={{ textDecoration: 'none' }}>
-                <ColoredRoundButton>
-                  <BusinessIcon sx={{ height: '1.1rem' }} />
-                  Experiências
-                </ColoredRoundButton>
-              </Link>
+              <>
+                <Link href="/admin" style={{ textDecoration: 'none' }}>
+                  <ColoredRoundButton>
+                    <BusinessIcon sx={{ height: '1.1rem' }} />
+                    Experiências
+                  </ColoredRoundButton>
+                </Link>
+                <Link href="/routes" style={{ textDecoration: 'none' }}>
+                  <ColoredRoundButton>
+                    <PlaceIcon sx={{ height: '1.1rem' }} />
+                    Rotas
+                  </ColoredRoundButton>
+                </Link>
+              </>
             ) : (
               <Link href="/home" style={{ textDecoration: 'none' }}>
                 <ColoredRoundButton>
