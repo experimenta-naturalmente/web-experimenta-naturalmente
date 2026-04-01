@@ -7,54 +7,164 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   TextField,
-  InputAdornment,
+  Box,
+  Card,
+  CardContent,
+  IconButton,
 } from '@mui/material';
+import {
+  DndContext,
+  closestCenter
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
 import backgroundImg from '@/assets/BackgroundRegister.png';
 import { TopBar } from '@/components/TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
-import { ExperienceCard } from '@/components/Admin/ExperienceCard';
-import { ExperienceModal } from '@/components/Admin/ExperienceModal';
-import {
-  getAllExperiences,
-  deleteExperience,
-  updateExperience,
-  createExperienceOnly,
-  Experience,
-  ExperiencePayload,
-} from '@/utils/service';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+
 
 export const Routes = () => {
   const theme = useTheme();
   const router = useRouter();
   const { user, loading: authLoading, isAdmin } = useAuth();
 
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [filteredExperiences, setFilteredExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [experienceToDelete, setExperienceToDelete] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
     'success',
   );
+
+  type Stop = {
+    id: string;
+    name: string;
+    address: string;
+  };
+
+  type Route = {
+    name: string;
+    description: string;
+    stops: Stop[];
+  };
+
+  const [route, setRoute] = useState<Route>({
+    name: '',
+    description: '',
+    stops: [],
+  });
+  const [newStop, setNewStop] = useState<Stop>({
+    id: '',
+    name: '',
+    address: '',
+  });
+
+  // ---------------- ITEM DRAGGABLE ----------------
+
+  function SortableItem({ stop, onRemove }: { stop: Stop; onRemove: () => void }) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+      id: stop.id,
+    });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
+
+    return (
+      <Card ref={setNodeRef} style={style} sx={{ mb: 2 }}>
+        <CardContent
+          {...attributes}
+          {...listeners}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            cursor: "grab"
+          }}
+        >
+          <Box>
+            <Typography>{stop.name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {stop.address}
+            </Typography>
+          </Box>
+
+          <IconButton onClick={onRemove}>
+            <DeleteIcon />
+          </IconButton>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // valida route e newstop
+
+  if (!route || !newStop) {
+    return <div>Carregando...</div>;
+  }
+
+  // -------- ADD STOP --------
+
+  const handleAddStop = () => {
+    if (!newStop.name) return;
+
+    const stop: Stop = {
+      id: crypto.randomUUID(),
+      name: newStop.name,
+      address: newStop.address
+    };
+
+    setRoute({
+      ...route,
+      stops: [...route.stops, stop]
+    });
+
+    setNewStop({ id: '', name: '', address: '' });
+  };
+
+  // -------- REMOVE STOP --------
+
+  const handleRemoveStop = (id: string) => {
+    setRoute({
+      ...route,
+      stops: route.stops.filter((s) => s.id !== id)
+    });
+  };
+
+  // -------- DRAG END --------
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = route.stops.findIndex((item) => item.id === active.id);
+    const newIndex = route.stops.findIndex((item) => item.id === over.id);
+    const newStops = arrayMove(route.stops, oldIndex, newIndex);
+
+    setRoute({
+      ...route,
+      stops: newStops
+    });
+  };
+
+  // -------- SUBMIT --------
+
+  const handleSubmit = () => {
+    console.log(route);
+  };
 
   const showToast = (
     message: string,
@@ -74,114 +184,8 @@ export const Routes = () => {
         router.push('/home');
       }
     }
+    setLoading(false);
   }, [user, authLoading, isAdmin, router]);
-
-  useEffect(() => {
-    loadExperiences();
-    loadCategories();
-  }, []);
-
-  useEffect(() => {
-    const normalizedSearch = searchTerm.toLowerCase();
-    const filtered = experiences.filter((exp) => {
-      const matchesType = selectedType === 'all' || exp.categoryId === selectedType;
-      const matchesSearch =
-        searchTerm.trim() === '' ||
-        exp.name.toLowerCase().includes(normalizedSearch) ||
-        exp.description?.toLowerCase().includes(normalizedSearch) ||
-        exp.details?.toLowerCase().includes(normalizedSearch) ||
-        exp.email?.toLowerCase().includes(normalizedSearch);
-
-      return matchesType && matchesSearch;
-    });
-
-    setFilteredExperiences(filtered);
-  }, [searchTerm, selectedType, experiences]);
-
-  const loadCategories = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, 'experienceCategories'));
-      const loadedCategories = snapshot.docs.map((categoryDoc) => {
-        const data = categoryDoc.data();
-        return {
-          id: categoryDoc.id,
-          name: data.name ?? data.title ?? categoryDoc.id,
-        };
-      });
-      setCategories(loadedCategories);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    }
-  };
-
-  const loadExperiences = async () => {
-    try {
-      setLoading(true);
-      const data = await getAllExperiences();
-      setExperiences(data);
-      setFilteredExperiences(data);
-    } catch (error) {
-      console.error('Error loading experiences:', error);
-      showToast('Erro ao carregar experiências', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = (experience: Experience) => {
-    setSelectedExperience(experience);
-    setModalOpen(true);
-  };
-
-  const handleCreate = () => {
-    setSelectedExperience(null);
-    setModalOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    setExperienceToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!experienceToDelete) return;
-
-    try {
-      await deleteExperience(experienceToDelete);
-      showToast('Experiência deletada com sucesso', 'success');
-      await loadExperiences();
-    } catch (error) {
-      console.error('Error deleting experience:', error);
-      showToast('Erro ao deletar experiência', 'error');
-    } finally {
-      setDeleteDialogOpen(false);
-      setExperienceToDelete(null);
-    }
-  };
-
-  const handleSave = async (experienceData: Partial<ExperiencePayload> & { id?: string }) => {
-    try {
-      if (experienceData.id) {
-        // Update existing
-        const { id, ...updateData } = experienceData;
-        await updateExperience(id, updateData);
-        showToast('Experiência atualizada com sucesso', 'success');
-      } else {
-        // Create new
-        if (!user?.uid) {
-          showToast('Erro: usuário não autenticado', 'error');
-          return;
-        }
-        await createExperienceOnly(experienceData as ExperiencePayload, user.uid);
-        showToast('Experiência criada com sucesso', 'success');
-      }
-      await loadExperiences();
-      setModalOpen(false);
-    } catch (error) {
-      console.error('Error saving experience:', error);
-      showToast('Erro ao salvar experiência', 'error');
-    }
-  };
 
   if (authLoading || loading) {
     return (
@@ -239,155 +243,95 @@ export const Routes = () => {
             Rotas
           </Typography>
         </Stack>
-
+        Nova Rota
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           justifyContent="space-evenly"
           alignItems="center"
           gap={2}
-        >
+        ></Stack>
+        <Box sx={{ mx: 'auto', mt: 4 }}>
+          <Typography variant="h5">Criar Rota Turística</Typography>
           <TextField
-            placeholder="Buscar experiências..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
-                </InputAdornment>
-              ),
-              sx: {
-                backgroundColor: theme.palette.neutrals.formsWhite,
-                borderRadius: '28px',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  border: '1px solid ' + theme.palette.neutrals.mediumGrey,
-                },
-                height: '2.75rem',
-                width: { xs: '100%', sm: '600px' },
-                fontSize: '0.95rem',
-              },
-            }}
+            label="Nome da rota"
+            fullWidth
+            margin="normal"
+            value={route.name}
+            onChange={(e) => setRoute({ ...route, name: e.target.value })}
           />
 
           <TextField
-            select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            SelectProps={{ native: true }}
-            sx={{
-              minWidth: { xs: '100%', sm: '240px' },
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '28px',
-                backgroundColor: theme.palette.neutrals.formsWhite,
-                height: '2.75rem',
-              },
-              '& .MuiInputBase-input': {
-                fontSize: '0.95rem',
-                textAlign: 'center',
-                justifyContent: 'center',
-                color:
-                  selectedType === 'all'
-                    ? theme.palette.neutrals.mediumGrey
-                    : theme.palette.neutrals.darkGrey,
-              },
-              '& .MuiNativeSelect-select': {
-                height: '100%',
-                boxSizing: 'border-box',
-                paddingTop: 0,
-                paddingBottom: 0,
-                paddingLeft: '14px',
-                paddingRight: '32px',
-              },
-            }}
+            label="Descrição"
+            fullWidth
+            multiline
+            rows={1}
+            margin="normal"
+            value={route.description}
+            onChange={(e) => setRoute({ ...route, description: e.target.value })}
+          />
+
+          <Typography variant="h6" mt={3}>
+            Paradas (arraste para ordenar)
+          </Typography>
+
+          {/* Form de nova parada */}
+          <Box display="flex" gap={2} mt={2}>
+            <TextField
+              label="Nome do local"
+              fullWidth
+              value={newStop.name}
+              onChange={(e) => setNewStop({ ...newStop, name: e.target.value })}
+            />
+
+            <TextField
+              label="Endereço"
+              fullWidth
+              value={newStop.address}
+              onChange={(e) => setNewStop({ ...newStop, address: e.target.value })}
+            />
+
+            <Button variant="contained" onClick={handleAddStop}>
+              Adicionar
+            </Button>
+          </Box>
+
+          {/* Lista de paradas */}
+          <Box mt={2}>
+            <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={route.stops.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {route.stops.map((stop) => (
+                  <SortableItem
+                    key={stop.id}
+                    stop={stop}
+                    onRemove={() => handleRemoveStop(stop.id)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </Box>
+
+          <Button variant="contained" fullWidth sx={{ mt: 3 }} onClick={handleSubmit}>
+            Salvar rota
+          </Button>
+        </Box>
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={4000}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setToastOpen(false)}
+            severity={toastSeverity}
+            sx={{ width: '100%' }}
           >
-            <option value="all">Todas as categorias</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </TextField>
-
-          <GradientRoundButton
-            onClick={handleCreate}
-            sx={{ height: '2.75rem', px: 3, fontWeight: 500, fontSize: '0.95rem' }}
-          >
-            Nova Experiência
-          </GradientRoundButton>
-        </Stack>
-
-        {filteredExperiences.length === 0 && !loading && (
-          <Stack alignItems="center" py={8}>
-            <Typography variant="h6" color={theme.palette.neutrals.mediumGrey}>
-              {searchTerm
-                ? 'Nenhuma experiência encontrada'
-                : 'Nenhuma experiência cadastrada ainda'}
-            </Typography>
-          </Stack>
-        )}
-
-        <Grid container spacing={3}>
-          {filteredExperiences.map((experience) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={experience.id}>
-              <ExperienceCard experience={experience} onEdit={handleEdit} onDelete={handleDelete} />
-            </Grid>
-          ))}
-        </Grid>
+            {toastMessage}
+          </Alert>
+        </Snackbar>
       </Stack>
-
-      <ExperienceModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSave}
-        experience={selectedExperience}
-      />
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: { borderRadius: '1rem' },
-        }}
-      >
-        <DialogTitle>
-          <Typography variant="h5" fontWeight={600}>
-            Confirmar exclusão
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography>Tem certeza que deseja deletar esta experiência?</Typography>
-          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-            Esta ação não pode ser desfeita.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            onClick={() => setDeleteDialogOpen(false)}
-            sx={{ color: theme.palette.neutrals.mediumGrey }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={confirmDelete}
-            variant="contained"
-            color="error"
-            sx={{ borderRadius: '8px' }}
-          >
-            Deletar
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={toastOpen}
-        autoHideDuration={4000}
-        onClose={() => setToastOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setToastOpen(false)} severity={toastSeverity} sx={{ width: '100%' }}>
-          {toastMessage}
-        </Alert>
-      </Snackbar>
     </Stack>
   );
 };
