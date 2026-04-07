@@ -13,6 +13,7 @@ import {
   Card,
   CardContent,
   IconButton,
+  InputAdornment,
 } from '@mui/material';
 import {
   DndContext,
@@ -34,7 +35,7 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { ExperienceModal } from '../ExperienceModal';
+import { RoutesModal } from '../Routes/RoutesModal';
 import { ExperiencePayload } from '@/utils/service';
 
 
@@ -54,29 +55,29 @@ export const Routes = () => {
     name: string;
   };
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [route, setRoute] = useState<Route>({
     name: '',
   });
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleSave = async (experienceData: Partial<ExperiencePayload> & { id?: string }) => {
-      try {
-        if (experienceData.id) {
-          showToast('Experiência atualizada com sucesso', 'success');
-        } else {
-          // Create new
-          if (!user?.uid) {
-            showToast('Erro: usuário não autenticado', 'error');
-            return;
-          }
-          showToast('Experiência criada com sucesso', 'success');
+    try {
+      if (experienceData.id) {
+        showToast('Experiência atualizada com sucesso', 'success');
+      } else {
+        // Create new
+        if (!user?.uid) {
+          showToast('Erro: usuário não autenticado', 'error');
+          return;
         }
-        setModalOpen(false);
-      } catch (error) {
-        console.error('Error saving experience:', error);
-        showToast('Erro ao salvar experiência', 'error');
+        showToast('Experiência criada com sucesso', 'success');
       }
-    };
+      setModalOpen(false);
+    } catch (error) {
+      console.error('Error saving experience:', error);
+      showToast('Erro ao salvar experiência', 'error');
+    }
+  };
 
   const handleCreate = () => {
     setModalOpen(true);
@@ -166,6 +167,26 @@ export const Routes = () => {
           alignItems="center"
           gap={2}
         >
+          <TextField
+            placeholder="Buscar rotas..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: theme.palette.neutrals.mediumGrey }} />
+                </InputAdornment>
+              ),
+              sx: {
+                backgroundColor: theme.palette.neutrals.formsWhite,
+                borderRadius: '28px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: '1px solid ' + theme.palette.neutrals.mediumGrey,
+                },
+                height: '2.75rem',
+                width: { xs: '100%', sm: '600px' },
+                fontSize: '0.95rem',
+              },
+            }}
+          />
           <GradientRoundButton
             onClick={handleCreate}
             sx={{ height: '2.75rem', px: 3, fontWeight: 500, fontSize: '0.95rem' }}
@@ -173,11 +194,7 @@ export const Routes = () => {
             Nova Rota
           </GradientRoundButton>
         </Stack>
-        <ExperienceModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onSave={handleSave}
-        />
+        <RoutesModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} />
         <Snackbar
           open={toastOpen}
           autoHideDuration={4000}
