@@ -1,5 +1,5 @@
 'use client';
-import { Routes } from '@/components/Admin/Routes';
+import { Routes } from '@/components/Admin/Routes/Routes';
 
 export default function RoutesPage() {
   return <Routes />;
