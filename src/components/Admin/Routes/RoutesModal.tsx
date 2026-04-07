@@ -15,16 +15,10 @@ import {
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
 import InputTags from '@/components/Inputs/InputTags/InputTags';
-import InputImages from '@/components/Inputs/InputImages/InputImages';
 import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
-import mailIcon from '@/assets/MailIcon.png';
-import phoneIcon from '@/assets/PhoneIcon.png';
 import bussinessIcon from '@/assets/BussinessIcon.png';
-import locationIcon from '@/assets/LocationIcon.png';
-import descriptionIcon from '@/assets/DescriptionIcon.png';
-import lockIcon from '@/assets/LockIcon.png';
-import { Experience, ExperiencePayload, Attachment, Tag, OpeningHourItem } from '@/utils/service';
+import { Experience, ExperiencePayload, Tag, OpeningHourItem } from '@/utils/service';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -40,16 +34,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   const isEdit = !!experience;
 
   const [estabName, setEstabName] = useState('');
-  const [estEmail, setEstEmail] = useState('');
-  const [estPhone, setEstPhone] = useState('');
-  const [description, setDescription] = useState('');
-  const [eventDetails, setEventDetails] = useState('');
-  const [eventStart, setEventStart] = useState('');
-  const [eventEnd, setEventEnd] = useState('');
-  const [cnpj, setCnpj] = useState('');
-  const [addressStreet, setAddressStreet] = useState('');
-  const [addressNumber, setAddressNumber] = useState<string | number>('');
-  const [addressZip, setAddressZip] = useState('');
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
@@ -61,41 +45,11 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     }[]
   >([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [attachments, setAttachments] = useState<{ file: File; base64: string }[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showImageWarning, setShowImageWarning] = useState(false);
-  const [existingImages, setExistingImages] = useState<Attachment[]>([]);
   const [originalTags, setOriginalTags] = useState<Tag[]>([]);
   const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
   const [openingHoursModified, setOpeningHoursModified] = useState(false);
   const [tagsModified, setTagsModified] = useState(false);
-
-  const formatPhone = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    const limitedValue = cleanValue.slice(0, 11);
-    if (limitedValue.length <= 2) return limitedValue;
-    if (limitedValue.length <= 7) return limitedValue.replace(/(\d{2})(\d+)/, '($1) $2');
-    if (limitedValue.length <= 10) return limitedValue.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
-    return limitedValue.replace(/(\d{2})(\d{5})(\d+)/, '($1) $2-$3');
-  };
-
-  const formatCNPJ = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    const limitedValue = cleanValue.slice(0, 14);
-    if (limitedValue.length <= 2) return limitedValue;
-    if (limitedValue.length <= 5) return limitedValue.replace(/(\d{2})(\d+)/, '$1.$2');
-    if (limitedValue.length <= 8) return limitedValue.replace(/(\d{2})(\d{3})(\d+)/, '$1.$2.$3');
-    if (limitedValue.length <= 12)
-      return limitedValue.replace(/(\d{2})(\d{3})(\d{3})(\d+)/, '$1.$2.$3/$4');
-    return limitedValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d+)/, '$1.$2.$3/$4-$5');
-  };
-
-  const formatCEP = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    const limitedValue = cleanValue.slice(0, 8);
-    if (limitedValue.length <= 5) return limitedValue;
-    return limitedValue.replace(/(\d{5})(\d+)/, '$1-$2');
-  };
 
   const DAY_KEY_TO_NAME: Record<string, string> = {
     mon: 'monday',
@@ -175,20 +129,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   useEffect(() => {
     if (experience) {
       setEstabName(experience.name || '');
-      setEstEmail(experience.email || '');
-      setEstPhone(experience.phone || '');
-      setDescription(experience.description || '');
-      setEventDetails(experience.details || '');
-      setEventStart(toDateTimeLocalValue(experience.eventStart));
-      setEventEnd(toDateTimeLocalValue(experience.eventEnd));
-      setCnpj(experience.cnpj || '');
-      setAddressStreet(experience.address?.street || '');
-      setAddressNumber(experience.address?.number || '');
-      setAddressZip(experience.address?.zipCode || '');
       setSelectedCategoryId(experience.categoryId);
-
-      // Salvar imagens existentes
-      setExistingImages(experience.attachments?.filter((att) => att.type === 'image') || []);
 
       // Salvar tags originais
       setOriginalTags(experience.tags || []);
@@ -264,20 +205,8 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     } else {
       // Reset form for new experience
       setEstabName('');
-      setEstEmail('');
-      setEstPhone('');
-      setDescription('');
-      setEventDetails('');
-      setEventStart('');
-      setEventEnd('');
-      setCnpj('');
-      setAddressStreet('');
-      setAddressNumber('');
-      setAddressZip('');
       setOpeningHoursMap(undefined);
       setSelectedTags([]);
-      setAttachments([]);
-      setExistingImages([]);
       setOriginalTags([]);
       setOriginalOpeningHours(undefined);
       setOpeningHoursModified(false);
@@ -286,14 +215,8 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   }, [experience]);
 
   const handleSubmit = async () => {
-    if (!estabName || !estEmail || !estPhone || !selectedCategoryId) {
+    if (!estabName || !selectedCategoryId) {
       alert('Preencha os campos obrigatórios: Nome, E-mail, Telefone e Categoria');
-      return;
-    }
-
-    // Se for edição e houver novas imagens, mostrar aviso
-    if (isEdit && attachments.length > 0 && existingImages.length > 0) {
-      setShowImageWarning(true);
       return;
     }
 
@@ -303,12 +226,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   const saveExperience = async () => {
     setLoading(true);
     try {
-      // Se houver novas imagens, usar elas; senão, manter as existentes
-      const attachmentsPayload =
-        attachments.length > 0
-          ? attachments.map((a) => ({ type: 'image', url: a.base64 }))
-          : existingImages;
-
       // Usar horários originais se não foi modificado pelo usuário
       let openingHours;
       if (isEventCategory) {
@@ -330,22 +247,9 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
 
       const experienceData: Partial<ExperiencePayload> & { id?: string } = {
         name: estabName,
-        description,
-        email: estEmail,
-        phone: estPhone,
-        cnpj,
         categoryId: selectedCategoryId,
-        address: { street: addressStreet, number: +addressNumber, zipCode: addressZip },
         tags: isEdit && !tagsModified ? originalTags : selectedTags,
-        attachments: attachmentsPayload,
         ...(openingHours ? { openingHours } : {}),
-        ...(isEventCategory
-          ? {
-              details: eventDetails,
-              eventStart: toIsoDateString(eventStart),
-              eventEnd: toIsoDateString(eventEnd),
-            }
-          : {}),
       };
 
       if (isEdit) {
@@ -454,102 +358,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
             onChange={(val) => setEstabName(val)}
           />
 
-          <Input
-            icon={mailIcon}
-            placeholder="E-mail *"
-            type="email"
-            value={estEmail}
-            onChange={(val) => setEstEmail(val)}
-          />
-
-          <Input
-            icon={phoneIcon}
-            placeholder="Telefone *"
-            type="tel"
-            value={estPhone}
-            onChange={(val) => {
-              const formatted = formatPhone(val);
-              setEstPhone(formatted);
-            }}
-          />
-
-          <Input
-            icon={descriptionIcon}
-            placeholder="Descrição"
-            value={description}
-            onChange={(val) => setDescription(val)}
-          />
-
-          {isEventCategory && (
-            <>
-              <Input
-                icon={descriptionIcon}
-                placeholder="Detalhes da programação"
-                value={eventDetails}
-                onChange={(val) => setEventDetails(val)}
-              />
-
-              <Stack
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '0.4rem',
-                }}
-              >
-                <Input
-                  placeholder="Início do evento"
-                  type="datetime-local"
-                  value={eventStart}
-                  onChange={(val) => setEventStart(val)}
-                />
-                <Input
-                  placeholder="Fim do evento"
-                  type="datetime-local"
-                  value={eventEnd}
-                  onChange={(val) => setEventEnd(val)}
-                />
-              </Stack>
-            </>
-          )}
-
-          <Stack
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '49% 16.5% 31.5%',
-              gap: '0.4rem',
-            }}
-          >
-            <Input
-              icon={locationIcon}
-              placeholder="Endereço"
-              value={addressStreet}
-              onChange={(val) => setAddressStreet(val)}
-            />
-            <Input
-              placeholder="N°"
-              value={addressNumber.toString()}
-              onChange={(val) => setAddressNumber(val)}
-            />
-            <Input
-              placeholder="CEP"
-              value={addressZip}
-              onChange={(val) => {
-                const formatted = formatCEP(val);
-                setAddressZip(formatted);
-              }}
-            />
-          </Stack>
-
-          <Input
-            icon={lockIcon}
-            placeholder="CNPJ"
-            value={cnpj}
-            onChange={(val) => {
-              const formatted = formatCNPJ(val);
-              setCnpj(formatted);
-            }}
-          />
-
           {!isEventCategory && (
             <OpeningHoursInput
               value={openingHoursMap}
@@ -559,8 +367,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
               }}
             />
           )}
-
-          <InputImages onChange={(atts) => setAttachments(atts)} />
 
           <InputTags
             availableTags={tagsAvailable(selectedCategoryId)}
@@ -572,60 +378,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
           />
         </Stack>
       </DialogContent>
-
-      {/* Modal de aviso sobre substituição de imagens */}
-      <Dialog
-        open={showImageWarning}
-        onClose={() => setShowImageWarning(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: '1rem',
-            backgroundColor: theme.palette.neutrals.formsWhite,
-            maxWidth: '450px',
-          },
-        }}
-      >
-        <DialogTitle>
-          <Typography variant="h6" color={theme.palette.neutrals.darkGrey} fontWeight={600}>
-            Substituir Imagens?
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color={theme.palette.neutrals.mediumGrey}>
-            Você adicionou novas imagens. Ao salvar, as imagens atuais ({existingImages.length}{' '})
-            serão substituídas pelas {attachments.length} nova(s) imagem(ns).
-          </Typography>
-          <Typography variant="body2" color={theme.palette.neutrals.mediumGrey} sx={{ mt: 2 }}>
-            Deseja continuar?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <GradientRoundButton
-            onClick={() => setShowImageWarning(false)}
-            sx={{
-              width: '7rem',
-              height: '2.5rem',
-              fontWeight: 500,
-              fontSize: '0.85rem',
-              background: theme.palette.neutrals.mediumGrey,
-              '&:hover': {
-                background: theme.palette.neutrals.darkGrey,
-              },
-            }}
-          >
-            Cancelar
-          </GradientRoundButton>
-          <GradientRoundButton
-            onClick={() => {
-              setShowImageWarning(false);
-              saveExperience();
-            }}
-            sx={{ width: '7rem', height: '2.5rem', fontWeight: 500, fontSize: '0.85rem' }}
-          >
-            Confirmar
-          </GradientRoundButton>
-        </DialogActions>
-      </Dialog>
 
       <DialogActions sx={{ p: 3, pt: 2 }}>
         <GradientRoundButton
