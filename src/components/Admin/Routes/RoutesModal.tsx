@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Autocomplete,
+  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -8,13 +16,14 @@ import {
   Typography,
   useTheme,
   FormControl,
+  FormLabel,
+  RadioGroup,
   FormControlLabel,
   Radio,
-  RadioGroup,
 } from '@mui/material';
+import { ArrowUpward, ArrowDownward, Delete, Margin } from "@mui/icons-material";
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
-import InputTags from '@/components/Inputs/InputTags/InputTags';
 import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import bussinessIcon from '@/assets/BussinessIcon.png';
@@ -33,7 +42,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   const theme = useTheme();
   const isEdit = !!experience;
 
-  const [estabName, setEstabName] = useState('');
+  const [routeName, setRouteName] = useState('');
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
@@ -59,6 +68,53 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     fri: 'friday',
     sat: 'saturday',
     sun: 'sunday',
+  };
+
+  const allExperiences = [
+    { id: 10, name: 'Bolicho do Chapéu' },
+    { id: 22, name: 'Fazenda da Cria' },
+    { id: 35, name: 'Reserva Pró-Mata' },
+  ];
+
+  const [selectedExperience, setSelectedExperience] = useState(null);
+  const [experienceList, setExperienceList] = useState([]);
+
+    const [returnToOrigin, setReturnToOrigin] = useState(false);
+
+  const handleChangeRadio = (event) => {
+    // O value vem como string, então convertemos para boolean
+    setReturnToOrigin(event.target.value === "true");
+  };
+
+  const addExperience = () => {
+    if (!selectedExperience) return;
+    // Verifica se já existe
+    const exists = experienceList.find((exp) => exp.id === selectedExperience.id);
+    if (exists) return;
+    // Adiciona à lista
+    setExperienceList([...experienceList, selectedExperience]);
+    // Limpa seleção
+    setSelectedExperience(null);
+  };
+
+  const moveUp = (index) => {
+    if (index === 0) return;
+    const newList = [...experienceList];
+    [newList[index - 1], newList[index]] = [newList[index], newList[index - 1]];
+    setExperienceList(newList);
+  };
+
+  const moveDown = (index) => {
+    if (index === experienceList.length - 1) return;
+    const newList = [...experienceList];
+    [newList[index + 1], newList[index]] = [newList[index], newList[index + 1]];
+    setExperienceList(newList);
+  };
+
+  const removeItem = (index) => {
+    const newList = [...experienceList];
+    newList.splice(index, 1);
+    setExperienceList(newList);
   };
 
   const toDateTimeLocalValue = (value?: string) => {
@@ -128,7 +184,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
 
   useEffect(() => {
     if (experience) {
-      setEstabName(experience.name || '');
+      setRouteName(experience.name || '');
       setSelectedCategoryId(experience.categoryId);
 
       // Salvar tags originais
@@ -204,7 +260,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
       }
     } else {
       // Reset form for new experience
-      setEstabName('');
+      setRouteName('');
       setOpeningHoursMap(undefined);
       setSelectedTags([]);
       setOriginalTags([]);
@@ -215,7 +271,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   }, [experience]);
 
   const handleSubmit = async () => {
-    if (!estabName || !selectedCategoryId) {
+    if (!routeName || !selectedCategoryId) {
       alert('Preencha os campos obrigatórios: Nome, E-mail, Telefone e Categoria');
       return;
     }
@@ -246,7 +302,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
       }
 
       const experienceData: Partial<ExperiencePayload> & { id?: string } = {
-        name: estabName,
+        name: routeName,
         categoryId: selectedCategoryId,
         tags: isEdit && !tagsModified ? originalTags : selectedTags,
         ...(openingHours ? { openingHours } : {}),
@@ -281,16 +337,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     }
   };
 
-  const tagsAvailable = (categoryId: string | undefined) => {
-    if (!categoryId) return availableTags;
-    return availableTags.filter((tag) =>
-      tag.experienceCategories
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((catRef: any) => catRef?._key?.path?.segments?.at?.(-1))
-        .includes(categoryId),
-    );
-  };
-
   return (
     <Dialog
       open={open}
@@ -311,51 +357,70 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
       </DialogTitle>
 
       <DialogContent>
-        <Stack spacing={2} sx={{ mt: 1 }}>
-          <FormControl>
-            <Typography
-              variant="body2"
-              color={theme.palette.neutrals.darkGrey}
-              sx={{ mb: 1, fontWeight: 500 }}
-            >
-              Categoria
-            </Typography>
-            <RadioGroup
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-            >
-              <Stack direction="row" spacing={1} justifyContent="flex-start" flexWrap="wrap">
-                {categories.map((cat) => (
-                  <FormControlLabel
-                    key={cat.id}
-                    value={cat.id}
-                    control={
-                      <Radio
-                        sx={{
-                          color: theme.palette.neutrals.mediumGrey,
-                          '&.Mui-checked': { color: theme.palette.customPrimaryShades[700] },
-                          transform: 'scale(0.85)',
-                        }}
-                      />
+        <Stack spacing={2}>
+          <Stack direction="row">
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Autocomplete
+                sx={{ pr : '10'}}
+                options={allExperiences}
+                getOptionLabel={(option) => option.name}
+                value={selectedExperience}
+                onChange={(e, newValue) => setSelectedExperience(newValue)}
+                renderInput={(params) => <TextField {...params} label="Experiência" />}
+                isOptionEqualToValue={(option, value) => option.id === value.id} // 👈 importante
+              />
+              <Button
+                variant="contained"
+                sx={{ mt: 2 }}
+                onClick={addExperience}
+                disabled={!selectedExperience}
+              >
+                Adicionar
+              </Button>
+
+              <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+                {experienceList.map((exp, index) => (
+                  <ListItem
+                    sx={{ mr: '100px' }}
+                    key={exp.id}
+                    secondaryAction={
+                      <Box>
+                        <IconButton onClick={() => moveUp(index)}>
+                          <ArrowUpward />
+                        </IconButton>
+                        <IconButton onClick={() => moveDown(index)}>
+                          <ArrowDownward />
+                        </IconButton>
+                        <IconButton onClick={() => removeItem(index)}>
+                          <Delete />
+                        </IconButton>
+                      </Box>
                     }
-                    label={cat.name}
-                    sx={{
-                      '.MuiTypography-root': {
-                        fontSize: '0.9rem',
-                        color: theme.palette.neutrals.mediumGrey,
-                      },
-                    }}
-                  />
+                  >
+                    <ListItemText primary={exp.name} />
+                  </ListItem>
                 ))}
-              </Stack>
+              </List>
+            </Box>
+          </Stack>
+
+          <FormControl>
+            <FormLabel>Retornar ao ponto de origem?</FormLabel>
+            <RadioGroup
+              row
+              value={returnToOrigin.toString()} // precisa ser string
+              onChange={handleChangeRadio}
+            >
+              <FormControlLabel value="true" control={<Radio />} label="Sim" />
+              <FormControlLabel value="false" control={<Radio />} label="Não" />
             </RadioGroup>
           </FormControl>
 
           <Input
             icon={bussinessIcon}
-            placeholder="Nome fantasia *"
-            value={estabName}
-            onChange={(val) => setEstabName(val)}
+            placeholder="Nome da Rota *"
+            value={routeName}
+            onChange={(val) => setRouteName(val)}
           />
 
           {!isEventCategory && (
@@ -367,15 +432,6 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
               }}
             />
           )}
-
-          <InputTags
-            availableTags={tagsAvailable(selectedCategoryId)}
-            initialSelectedTags={selectedTags}
-            onChange={(tags) => {
-              setSelectedTags(tags);
-              setTagsModified(true);
-            }}
-          />
         </Stack>
       </DialogContent>
 
