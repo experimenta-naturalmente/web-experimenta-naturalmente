@@ -361,12 +361,13 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
           <Stack direction="row">
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Autocomplete
-                sx={{ pr : '10'}}
                 options={allExperiences}
                 getOptionLabel={(option) => option.name}
                 value={selectedExperience}
                 onChange={(e, newValue) => setSelectedExperience(newValue)}
-                renderInput={(params) => <TextField {...params} label="Experiência" />}
+                renderInput={(params) => (
+                  <TextField {...params} label="Experiência" sx={{ width: '300px' }} />
+                )}
                 isOptionEqualToValue={(option, value) => option.id === value.id} // 👈 importante
               />
               <Button
