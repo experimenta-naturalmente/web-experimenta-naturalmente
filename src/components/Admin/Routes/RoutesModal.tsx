@@ -28,8 +28,8 @@ import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHour
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import bussinessIcon from '@/assets/BussinessIcon.png';
 import { ExperienceRoute, OpeningHourItem, RoutePayload } from '@/utils/service';
-// import { collection, getDocs } from 'firebase/firestore';
-// import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface RoutesModalProps {
   open: boolean;
@@ -51,6 +51,13 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   const [experienceList, setExperienceList] = useState<ExperienceRoute[]>([]);
   const [returnToOrigin, setReturnToOrigin] = useState(false);
 
+  type ExperienceOptions = {
+    id: number;
+    name: string;
+    order: number;
+  };
+  const [experienceOptions, setExperienceOptions] = useState<ExperienceOptions[]>([]);
+
   const DAY_KEY_TO_NAME: Record<string, string> = {
     mon: 'monday',
     tue: 'tuesday',
@@ -60,12 +67,6 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     sat: 'saturday',
     sun: 'sunday',
   };
-
-  const allExperiences = [
-    { id: 10, name: 'Bolicho do Chapéu', order: 0 },
-    { id: 22, name: 'Fazenda da Cria', order: 1 },
-    { id: 35, name: 'Reserva Pró-Mata', order: 2 },
-  ];
 
   const handleChangeRadio = (event: { target: { value: string } }) => {
     // O value vem como string, então convertemos para boolean
@@ -117,27 +118,31 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     setExperienceList(reordered);
   };
 
-  // const toDateTimeLocalValue = (value?: string) => {
-  //   if (!value) return '';
-  //   const date = new Date(value);
-  //   if (Number.isNaN(date.getTime())) return '';
-  //   const pad = (n: number) => n.toString().padStart(2, '0');
-  //   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-  //     date.getHours(),
-  //   )}:${pad(date.getMinutes())}`;
-  // };
-
-  // const toIsoDateString = (value?: string) => {
-  //   if (!value) return undefined;
-  //   const date = new Date(value);
-  //   if (Number.isNaN(date.getTime())) return undefined;
-  //   return date.toISOString();
-  // };
-
   useEffect(() => {
-    //async
-    //getDocs
-    //setavailabletags
+    async function loadExperiences() {
+      try {
+        let order = 0;
+        const experiencesSnap = await getDocs(collection(db, 'experiences'));
+        const experiences: {
+          id: number;
+          name: string;
+          order: number;
+        }[] = [];
+        experiencesSnap.docs.forEach((doc) => {
+          const data = doc.data();
+          experiences.push({
+            id: order,
+            name: data.name,
+            order: order++,
+          });
+        });
+        setExperienceOptions(experiences);
+        console.log(experiences);
+      } catch (e) {
+        console.warn('Failed to load experiences', e);
+      }
+    }
+    loadExperiences();
   }, [isEdit]);
 
   useEffect(() => {
@@ -313,7 +318,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
           <Stack direction="row">
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Autocomplete
-                options={allExperiences}
+                options={experienceOptions}
                 getOptionLabel={(option) => option.name}
                 value={selectedExperience || null}
                 onChange={(e, newValue) => setSelectedExperience(newValue)}
