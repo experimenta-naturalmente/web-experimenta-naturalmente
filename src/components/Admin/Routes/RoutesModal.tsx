@@ -28,8 +28,8 @@ import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHour
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import bussinessIcon from '@/assets/BussinessIcon.png';
 import { ExperienceRoute, OpeningHourItem, RoutePayload } from '@/utils/service';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+// import { collection, getDocs } from 'firebase/firestore';
+// import { db } from '@/lib/firebase';
 
 interface RoutesModalProps {
   open: boolean;
@@ -42,11 +42,14 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   const theme = useTheme();
   const isEdit = !!route;
 
+  const [loading, setLoading] = useState(false);
   const [routeName, setRouteName] = useState('');
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
   const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
   const [openingHoursModified, setOpeningHoursModified] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState<ExperienceRoute | null>();
+  const [experienceList, setExperienceList] = useState<ExperienceRoute[]>([]);
+  const [returnToOrigin, setReturnToOrigin] = useState(false);
 
   const DAY_KEY_TO_NAME: Record<string, string> = {
     mon: 'monday',
@@ -64,10 +67,6 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     { id: 35, name: 'Reserva Pró-Mata', order: 2 },
   ];
 
-  const [selectedExperience, setSelectedExperience] = useState(null);
-  const [experienceList, setExperienceList] = useState<ExperienceRoute[] | undefined>([]);
-  const [returnToOrigin, setReturnToOrigin] = useState(false);
-
   const handleChangeRadio = (event: { target: { value: string } }) => {
     // O value vem como string, então convertemos para boolean
     setReturnToOrigin(event.target.value === 'true');
@@ -81,7 +80,6 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     // Adiciona à lista
     setExperienceList([...experienceList, selectedExperience]);
     // Limpa seleção
-    setSelectedExperience(null);
   };
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
@@ -89,7 +87,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
 
     const newList = [...experienceList];
 
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
     if (targetIndex < 0 || targetIndex >= newList.length) return;
 
@@ -119,22 +117,22 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     setExperienceList(reordered);
   };
 
-  const toDateTimeLocalValue = (value?: string) => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-      date.getHours(),
-    )}:${pad(date.getMinutes())}`;
-  };
+  // const toDateTimeLocalValue = (value?: string) => {
+  //   if (!value) return '';
+  //   const date = new Date(value);
+  //   if (Number.isNaN(date.getTime())) return '';
+  //   const pad = (n: number) => n.toString().padStart(2, '0');
+  //   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+  //     date.getHours(),
+  //   )}:${pad(date.getMinutes())}`;
+  // };
 
-  const toIsoDateString = (value?: string) => {
-    if (!value) return undefined;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return undefined;
-    return date.toISOString();
-  };
+  // const toIsoDateString = (value?: string) => {
+  //   if (!value) return undefined;
+  //   const date = new Date(value);
+  //   if (Number.isNaN(date.getTime())) return undefined;
+  //   return date.toISOString();
+  // };
 
   useEffect(() => {
     //async
@@ -246,11 +244,11 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
         openingHours = undefined;
       }
 
-      const routeData: Partial<RoutePayload> & { id?: string } = {
+      const routeData: Partial<RoutePayload> = {
         name: routeName,
         isLoop: returnToOrigin,
         ...(openingHours ? { openingHours } : {}),
-        ...(experienceList ? { experienceRoute } : {}),
+        ...(experienceList ? { experienceList } : {}),
       };
       //name: string;
       //isLoop: boolean;
@@ -258,7 +256,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
       //experiences?: ExperienceRoute[];
 
       if (isEdit) {
-        routeData.id = experience.id;
+        routeData.name = route.name;
       }
 
       const estimatedBytes = new TextEncoder().encode(JSON.stringify(routeData)).length;
@@ -300,7 +298,12 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
       }}
     >
       <DialogTitle>
-        <Typography variant="h4" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+        <Typography
+          variant="h4"
+          component="span"
+          color={theme.palette.neutrals.darkGrey}
+          fontWeight={700}
+        >
           {isEdit ? 'Editar Rota' : 'Nova Rota'}
         </Typography>
       </DialogTitle>

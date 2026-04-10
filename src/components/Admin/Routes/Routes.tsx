@@ -51,13 +51,6 @@ export const Routes = () => {
     'success',
   );
 
-  type Route = {
-    name: string;
-  };
-
-  const [route, setRoute] = useState<Route>({
-    name: '',
-  });
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleSave = async (routeData: Partial<RoutePayload> & { id?: string }) => {
@@ -75,8 +68,8 @@ export const Routes = () => {
       }
       setModalOpen(false);
     } catch (error) {
-      console.error('Error saving experience:', error);
-      showToast('Erro ao salvar experiência', 'error');
+      console.error('Error saving route:', error);
+      showToast('Erro ao salvar rota', 'error');
     }
   };
 

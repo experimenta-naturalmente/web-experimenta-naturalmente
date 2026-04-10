@@ -400,7 +400,12 @@ export const ExperienceModal = ({ open, onClose, onSave, experience }: Experienc
       }}
     >
       <DialogTitle>
-        <Typography variant="h4" color={theme.palette.neutrals.darkGrey} fontWeight={700}>
+        <Typography
+          variant="h4"
+          component="span"
+          color={theme.palette.neutrals.darkGrey}
+          fontWeight={700}
+        >
           {isEdit ? 'Editar Experiência' : 'Nova Experiência'}
         </Typography>
       </DialogTitle>

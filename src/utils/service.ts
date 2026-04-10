@@ -58,7 +58,7 @@ export type RoutePayload = {
   isLoop: boolean;
   openingHours?: OpeningHourItem[];
   experiences?: ExperienceRoute[];
-}
+};
 
 export type UserPayload = {
   email: string;
