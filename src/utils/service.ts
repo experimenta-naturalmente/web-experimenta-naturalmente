@@ -24,6 +24,12 @@ export type OpeningHourItem = {
   isWorkingDay?: boolean;
 };
 
+export type ExperienceRoute = {
+  id: number;
+  name: string;
+  order: number;
+};
+
 export type ExperiencePayload = {
   name: string;
   description?: string;
@@ -46,6 +52,13 @@ export type ExperiencePayload = {
   socialNetworks?: Record<string, string>;
   tags?: Tag[];
 };
+
+export type RoutePayload = {
+  name: string;
+  isLoop: boolean;
+  openingHours?: OpeningHourItem[];
+  experiences?: ExperienceRoute[];
+}
 
 export type UserPayload = {
   email: string;
@@ -122,6 +135,16 @@ export async function createExperienceOnly(experience: ExperiencePayload, ownerI
   const experiencesCol = collection(db, 'experiences');
   const docRef = await addDoc(experiencesCol, {
     ...experience,
+    ownerId: ownerId,
+    createdAt: serverTimestamp(),
+  });
+  return docRef.id;
+}
+
+export async function createRouteOnly(route: RoutePayload, ownerId: string) {
+  const routesCol = collection(db, 'routes');
+  const docRef = await addDoc(routesCol, {
+    ...route,
     ownerId: ownerId,
     createdAt: serverTimestamp(),
   });

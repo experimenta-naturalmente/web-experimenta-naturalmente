@@ -36,7 +36,7 @@ import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { RoutesModal } from '../Routes/RoutesModal';
-import { ExperiencePayload } from '@/utils/service';
+import { createRouteOnly, RoutePayload } from '@/utils/service';
 
 
 export const Routes = () => {
@@ -60,17 +60,18 @@ export const Routes = () => {
   });
   const [modalOpen, setModalOpen] = useState(false);
 
-  const handleSave = async (experienceData: Partial<ExperiencePayload> & { id?: string }) => {
+  const handleSave = async (routeData: Partial<RoutePayload> & { id?: string }) => {
     try {
-      if (experienceData.id) {
-        showToast('Experiência atualizada com sucesso', 'success');
+      if (routeData.id) {
+        showToast('Rota atualizada com sucesso', 'success');
       } else {
         // Create new
         if (!user?.uid) {
           showToast('Erro: usuário não autenticado', 'error');
           return;
         }
-        showToast('Experiência criada com sucesso', 'success');
+        await createRouteOnly(routeData as RoutePayload, user.uid);
+        showToast('Rota criada com sucesso', 'success');
       }
       setModalOpen(false);
     } catch (error) {

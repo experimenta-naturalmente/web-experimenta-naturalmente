@@ -21,44 +21,32 @@ import {
   FormControlLabel,
   Radio,
 } from '@mui/material';
-import { ArrowUpward, ArrowDownward, Delete, Margin } from "@mui/icons-material";
+import { ArrowUpward, ArrowDownward, Delete } from "@mui/icons-material";
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import Input from '@/components/Inputs/Input/Input';
 import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import bussinessIcon from '@/assets/BussinessIcon.png';
-import { Experience, ExperiencePayload, Tag, OpeningHourItem } from '@/utils/service';
+import { ExperienceRoute, OpeningHourItem, RoutePayload } from '@/utils/service';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface RoutesModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: (experience: Partial<ExperiencePayload> & { id?: string }) => Promise<void>;
-  experience?: Experience | null;
+  onSave: (route: Partial<RoutePayload> & { id?: string }) => Promise<void>;
+  route?: RoutePayload | null;
 }
 
-export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalProps) => {
+export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) => {
   const theme = useTheme();
-  const isEdit = !!experience;
+  const isEdit = !!route;
 
   const [routeName, setRouteName] = useState('');
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
-  const [availableTags, setAvailableTags] = useState<
-    {
-      id: string;
-      name: string;
-      experienceCategories: { _key: { path: { segments: string[] } } }[];
-    }[]
-  >([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [originalTags, setOriginalTags] = useState<Tag[]>([]);
   const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
   const [openingHoursModified, setOpeningHoursModified] = useState(false);
-  const [tagsModified, setTagsModified] = useState(false);
 
   const DAY_KEY_TO_NAME: Record<string, string> = {
     mon: 'monday',
@@ -71,25 +59,24 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
   };
 
   const allExperiences = [
-    { id: 10, name: 'Bolicho do Chapéu' },
-    { id: 22, name: 'Fazenda da Cria' },
-    { id: 35, name: 'Reserva Pró-Mata' },
+    { id: 10, name: 'Bolicho do Chapéu', order: 0 },
+    { id: 22, name: 'Fazenda da Cria', order: 1 },
+    { id: 35, name: 'Reserva Pró-Mata', order: 2 },
   ];
 
   const [selectedExperience, setSelectedExperience] = useState(null);
-  const [experienceList, setExperienceList] = useState([]);
+  const [experienceList, setExperienceList] = useState<ExperienceRoute[] | undefined>([]);
+  const [returnToOrigin, setReturnToOrigin] = useState(false);
 
-    const [returnToOrigin, setReturnToOrigin] = useState(false);
-
-  const handleChangeRadio = (event) => {
+  const handleChangeRadio = (event: { target: { value: string } }) => {
     // O value vem como string, então convertemos para boolean
-    setReturnToOrigin(event.target.value === "true");
+    setReturnToOrigin(event.target.value === 'true');
   };
 
   const addExperience = () => {
     if (!selectedExperience) return;
     // Verifica se já existe
-    const exists = experienceList.find((exp) => exp.id === selectedExperience.id);
+    const exists = experienceList?.find((exp) => exp.id === selectedExperience.id);
     if (exists) return;
     // Adiciona à lista
     setExperienceList([...experienceList, selectedExperience]);
@@ -97,24 +84,39 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     setSelectedExperience(null);
   };
 
-  const moveUp = (index) => {
-    if (index === 0) return;
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    if (!experienceList) return;
+
     const newList = [...experienceList];
-    [newList[index - 1], newList[index]] = [newList[index], newList[index - 1]];
-    setExperienceList(newList);
+
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newList.length) return;
+
+    // troca
+    [newList[index], newList[targetIndex]] = [newList[targetIndex], newList[index]];
+
+    // recalcula order
+    const reordered = newList.map((item, i) => ({
+      ...item,
+      order: i + 1,
+    }));
+
+    setExperienceList(reordered);
   };
 
-  const moveDown = (index) => {
-    if (index === experienceList.length - 1) return;
-    const newList = [...experienceList];
-    [newList[index + 1], newList[index]] = [newList[index], newList[index + 1]];
-    setExperienceList(newList);
-  };
+  const removeItem = (id: number) => {
+    if (!experienceList) return;
 
-  const removeItem = (index) => {
-    const newList = [...experienceList];
-    newList.splice(index, 1);
-    setExperienceList(newList);
+    const filtered = experienceList.filter((item) => item.id !== id);
+
+    // reordena depois de remover
+    const reordered = filtered.map((item, i) => ({
+      ...item,
+      order: i + 1,
+    }));
+
+    setExperienceList(reordered);
   };
 
   const toDateTimeLocalValue = (value?: string) => {
@@ -134,73 +136,21 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
     return date.toISOString();
   };
 
-  const selectedCategoryName =
-    categories.find((category) => category.id === selectedCategoryId)?.name?.toLowerCase() ?? '';
-  const isEventCategory = selectedCategoryName.includes('evento');
-
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const snap = await getDocs(collection(db, 'experienceCategories'));
-        const cats: { id: string; name: string }[] = [];
-        snap.docs.forEach((doc) => {
-          const data = doc.data();
-          cats.push({ id: doc.id, name: data.name ?? data.title ?? doc.id });
-        });
-        if (cats.length > 0) {
-          setCategories(cats);
-          if (!isEdit) setSelectedCategoryId(cats[0].id);
-        }
-      } catch (e) {
-        console.warn('Failed to load categories', e);
-      }
-    }
-
-    async function loadTags() {
-      try {
-        const tagsSnap = await getDocs(collection(db, 'tags'));
-        const tags: {
-          id: string;
-          name: string;
-          experienceCategories: { _key: { path: { segments: string[] } } }[];
-        }[] = [];
-        tagsSnap.docs.forEach((doc) => {
-          const data = doc.data();
-          tags.push({
-            id: doc.id,
-            name: data.name,
-            experienceCategories: data.experienceCategories ?? [],
-          });
-        });
-        setAvailableTags(tags);
-      } catch (e) {
-        console.warn('Failed to load tags', e);
-      }
-    }
-
-    loadCategories();
-    loadTags();
+    //async
+    //getDocs
+    //setavailabletags
   }, [isEdit]);
 
   useEffect(() => {
-    if (experience) {
-      setRouteName(experience.name || '');
-      setSelectedCategoryId(experience.categoryId);
-
-      // Salvar tags originais
-      setOriginalTags(experience.tags || []);
-
-      // Convert tags to string array if they are objects
-      const tagsAsStrings = (experience.tags || [])
-        .map((tag) => (typeof tag === 'string' ? tag : tag?.name || ''))
-        .filter(Boolean);
-      setSelectedTags(tagsAsStrings);
+    if (route) {
+      setRouteName(route.name || '');
 
       // Salvar horários de funcionamento originais
-      setOriginalOpeningHours(experience.openingHours);
+      setOriginalOpeningHours(route.openingHours);
 
       // Convert opening hours to map format
-      if (experience.openingHours && experience.openingHours.length > 0) {
+      if (route.openingHours && route.openingHours.length > 0) {
         const hoursMap: OpeningHoursMap = {
           mon: {
             open: undefined,
@@ -248,7 +198,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
           sunday: 'sun',
         };
 
-        experience.openingHours.forEach((hour) => {
+        route.openingHours.forEach((hour) => {
           const key = nameToKey[hour.dayOfWeek] || hour.dayOfWeek;
           hoursMap[key as keyof OpeningHoursMap] = {
             open: hour.openingHour,
@@ -262,31 +212,26 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
       // Reset form for new experience
       setRouteName('');
       setOpeningHoursMap(undefined);
-      setSelectedTags([]);
-      setOriginalTags([]);
       setOriginalOpeningHours(undefined);
       setOpeningHoursModified(false);
-      setTagsModified(false);
     }
-  }, [experience]);
+  }, [route]);
 
   const handleSubmit = async () => {
-    if (!routeName || !selectedCategoryId) {
-      alert('Preencha os campos obrigatórios: Nome, E-mail, Telefone e Categoria');
+    if (!routeName) {
+      alert('Preencha os campos obrigatórios: Experiencias, Nome, e Horário');
       return;
     }
 
-    await saveExperience();
+    await saveRoute();
   };
 
-  const saveExperience = async () => {
+  const saveRoute = async () => {
     setLoading(true);
     try {
       // Usar horários originais se não foi modificado pelo usuário
       let openingHours;
-      if (isEventCategory) {
-        openingHours = undefined;
-      } else if (isEdit && !openingHoursModified && originalOpeningHours) {
+      if (isEdit && !openingHoursModified && originalOpeningHours) {
         // Mantém os horários originais se não foi alterado
         openingHours = originalOpeningHours;
       } else if (openingHoursMap) {
@@ -301,18 +246,22 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
         openingHours = undefined;
       }
 
-      const experienceData: Partial<ExperiencePayload> & { id?: string } = {
+      const routeData: Partial<RoutePayload> & { id?: string } = {
         name: routeName,
-        categoryId: selectedCategoryId,
-        tags: isEdit && !tagsModified ? originalTags : selectedTags,
+        isLoop: returnToOrigin,
         ...(openingHours ? { openingHours } : {}),
+        ...(experienceList ? { experienceRoute } : {}),
       };
+      //name: string;
+      //isLoop: boolean;
+      //openingHours?: OpeningHourItem[];
+      //experiences?: ExperienceRoute[];
 
       if (isEdit) {
-        experienceData.id = experience.id;
+        routeData.id = experience.id;
       }
 
-      const estimatedBytes = new TextEncoder().encode(JSON.stringify(experienceData)).length;
+      const estimatedBytes = new TextEncoder().encode(JSON.stringify(routeData)).length;
       if (estimatedBytes > 950000) {
         alert(
           'O conteúdo da experiência está muito grande para o banco de dados. Reduza a quantidade/tamanho das imagens e tente novamente.',
@@ -320,7 +269,7 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
         return;
       }
 
-      await onSave(experienceData);
+      await onSave(routeData);
       onClose();
     } catch (e) {
       console.error('Error saving experience:', e);
@@ -380,25 +329,30 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
               </Button>
 
               <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
-                {experienceList.map((exp, index) => (
-                  <ListItem
-                    sx={{ mr: '100px' }}
-                    key={exp.id}
-                    secondaryAction={
-                      <Box>
-                        <IconButton onClick={() => moveUp(index)}>
-                          <ArrowUpward />
-                        </IconButton>
-                        <IconButton onClick={() => moveDown(index)}>
-                          <ArrowDownward />
-                        </IconButton>
-                        <IconButton onClick={() => removeItem(index)}>
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    }
-                  >
-                    <ListItemText primary={exp.name} />
+                {experienceList
+                  ?.sort((a, b) => a.order - b.order)
+                  .map((item, index) => (
+                    <ListItem
+                      sx={{ mr: '6.25rem' }}
+                      key={item.id}
+                      secondaryAction={
+                        <Box>
+                          <IconButton onClick={() => moveItem(index, 'up')} disabled={index === 0}>
+                            <ArrowUpward />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => moveItem(index, 'down')}
+                            disabled={index === experienceList?.length - 1}
+                          >
+                            <ArrowDownward />
+                          </IconButton>
+                          <IconButton onClick={() => removeItem(item.id)}>
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      }
+                    >
+                    <ListItemText primary={item.name} />
                   </ListItem>
                 ))}
               </List>
@@ -423,16 +377,13 @@ export const RoutesModal = ({ open, onClose, onSave, experience }: RoutesModalPr
             value={routeName}
             onChange={(val) => setRouteName(val)}
           />
-
-          {!isEventCategory && (
-            <OpeningHoursInput
-              value={openingHoursMap}
-              onChange={(val) => {
-                setOpeningHoursMap(val);
-                setOpeningHoursModified(true);
-              }}
-            />
-          )}
+          <OpeningHoursInput
+            value={openingHoursMap}
+            onChange={(val) => {
+              setOpeningHoursMap(val);
+              setOpeningHoursModified(true);
+            }}
+          />
         </Stack>
       </DialogContent>
 
