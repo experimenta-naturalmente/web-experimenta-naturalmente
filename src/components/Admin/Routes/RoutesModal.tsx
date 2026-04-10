@@ -47,7 +47,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
   const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
   const [openingHoursModified, setOpeningHoursModified] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<ExperienceRoute | null>();
+  const [selectedExperience, setSelectedExperience] = useState<ExperienceRoute | null>(null);
   const [experienceList, setExperienceList] = useState<ExperienceRoute[]>([]);
   const [returnToOrigin, setReturnToOrigin] = useState(false);
 
@@ -216,7 +216,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   }, [route]);
 
   const handleSubmit = async () => {
-    if (!routeName) {
+    if (!routeName || !openingHoursMap) {
       alert('Preencha os campos obrigatórios: Experiencias, Nome, e Horário');
       return;
     }
@@ -315,7 +315,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
               <Autocomplete
                 options={allExperiences}
                 getOptionLabel={(option) => option.name}
-                value={selectedExperience}
+                value={selectedExperience || null}
                 onChange={(e, newValue) => setSelectedExperience(newValue)}
                 renderInput={(params) => (
                   <TextField {...params} label="Experiência" sx={{ width: '300px' }} />
