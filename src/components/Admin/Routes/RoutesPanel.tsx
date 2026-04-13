@@ -36,7 +36,7 @@ import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { RoutesModal } from './RoutesModal';
-import { createRouteOnly, Experience, getAllExperiences, RoutePayload } from '@/utils/service';
+import { createRouteOnly, Experience, getAllExperiences, getAllRoutes, Route, RoutePayload } from '@/utils/service';
 import { RoutesCard } from './RoutesCard';
 
 
@@ -45,7 +45,7 @@ export const Routes = () => {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin } = useAuth();
 
-  const [filteredExperiences, setFilteredExperiences] = useState<Experience[]>([]);
+  const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -104,17 +104,17 @@ export const Routes = () => {
   const loadExperiences = async () => {
     try {
       setLoading(true);
-      const data = await getAllExperiences();
-      setFilteredExperiences(data);
+      const data = await getAllRoutes();
+      setFilteredRoutes(data);
     } catch (error) {
-      console.error('Error loading experiences:', error);
-      showToast('Erro ao carregar experiências', 'error');
+      console.error('Error loading routes:', error);
+      showToast('Erro ao carregar rotas', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (experience: Experience) => {
+  const handleEdit = (route: Route) => {
     // setSelectedExperience(experience);
     setModalOpen(true);
   };
@@ -220,9 +220,9 @@ export const Routes = () => {
           </GradientRoundButton>
         </Stack>
         <Grid container spacing={3}>
-          {filteredExperiences.map((experience) => (
+          {filteredRoutes.map((experience) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={experience.id}>
-              <RoutesCard experience={experience} onEdit={handleEdit} onDelete={handleDelete} />
+              <RoutesCard route={experience} onEdit={handleEdit} onDelete={handleDelete} />
             </Grid>
           ))}
         </Grid>

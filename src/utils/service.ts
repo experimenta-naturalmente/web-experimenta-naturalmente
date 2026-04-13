@@ -24,12 +24,6 @@ export type OpeningHourItem = {
   isWorkingDay?: boolean;
 };
 
-export type ExperienceRoute = {
-  id: number;
-  name: string;
-  order: number;
-};
-
 export type ExperiencePayload = {
   name: string;
   description?: string;
@@ -53,11 +47,17 @@ export type ExperiencePayload = {
   tags?: Tag[];
 };
 
+export type ExperienceRoute = {
+  id: number;
+  name: string;
+  order: number;
+};
+
 export type RoutePayload = {
   name: string;
   isLoop: boolean;
   openingHours?: OpeningHourItem[];
-  experiences?: ExperienceRoute[];
+  experienceList?: ExperienceRoute[];
 };
 
 export type UserPayload = {
@@ -157,6 +157,12 @@ export type Experience = ExperiencePayload & {
   createdAt?: Date | FieldValue;
 };
 
+// Experience type with ID for routes panel
+export type Route = RoutePayload & {
+  id: string;
+  createdAt?: Date | FieldValue;
+};
+
 // Get all experiences
 export async function getAllExperiences(): Promise<Experience[]> {
   const experiencesCol = collection(db, 'experiences');
@@ -172,6 +178,23 @@ export async function getAllExperiences(): Promise<Experience[]> {
   });
 
   return experiences;
+}
+
+// Get all routes
+export async function getAllRoutes(): Promise<Route[]> {
+  const routesCol = collection(db, 'routes');
+  const snapshot = await getDocs(routesCol);
+  const routes: Route[] = [];
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    routes.push({
+      id: doc.id,
+      ...data,
+    } as Route);
+  });
+
+  return routes;
 }
 
 // Get single experience by ID

@@ -8,44 +8,24 @@ import {
   Stack,
   useTheme,
   Divider,
+  List,
+  ListItem,
+  Box,
+  ListItemText,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { Experience } from '@/utils/service';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { Route } from '@/utils/service';
 
 interface ExperienceCardProps {
-  experience: Experience;
-  onEdit: (experience: Experience) => void;
+  route: Route;
+  onEdit: (route: Route) => void;
   onDelete: (id: string) => void;
 }
 
-export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps) => {
+export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCardProps) => {
   const theme = useTheme();
-  const [categoryName, setCategoryName] = useState<string | null>(null);
-
-  // Buscar nome da categoria
-  useEffect(() => {
-    async function fetchCategoryName() {
-      if (!experience.categoryId) return;
-      try {
-        const catDocRef = doc(db, 'experienceCategories', experience.categoryId);
-        const catDoc = await getDoc(catDocRef);
-        if (catDoc.exists()) {
-          const data = catDoc.data();
-          setCategoryName(data.name ?? data.title ?? experience.categoryId);
-        } else {
-          setCategoryName(experience.categoryId);
-        }
-      } catch (error) {
-        console.warn('Failed to fetch category name:', error);
-        setCategoryName(experience.categoryId);
-      }
-    }
-    fetchCategoryName();
-  }, [experience.categoryId]);
 
   const formatOpeningHours = () => {
     if (!experience.openingHours || experience.openingHours.length === 0) return null;
@@ -99,19 +79,22 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
             }}
           >
             {experience.name}
-            {categoryName && (
-              <Typography
-                component="span"
-                variant="body2"
-                color={theme.palette.customPrimaryShades[600]}
-                sx={{ ml: 1 }}
-              >
-                - {categoryName}
-              </Typography>
-            )}
           </Typography>
 
           <Divider />
+
+          <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+            {experience.experienceList
+              ?.sort((a, b) => a.order - b.order)
+              .map((item, index) => (
+                <ListItem sx={{ mr: '6.25rem' }} key={item.id}>
+                  <ListItemText
+                    primary={item.name}
+                    sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
+                  />
+                </ListItem>
+              ))}
+          </List>
 
           {/* <LocationOnIcon
         sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
