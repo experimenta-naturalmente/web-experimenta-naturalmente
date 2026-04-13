@@ -1,0 +1,327 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  IconButton,
+  Stack,
+  useTheme,
+  Chip,
+  Divider,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BusinessIcon from '@mui/icons-material/Business';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Experience } from '@/utils/service';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+interface ExperienceCardProps {
+  experience: Experience;
+  onEdit: (experience: Experience) => void;
+  onDelete: (id: string) => void;
+}
+
+export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps) => {
+  const theme = useTheme();
+  const [categoryName, setCategoryName] = useState<string | null>(null);
+
+  // Buscar nome da categoria
+  useEffect(() => {
+    async function fetchCategoryName() {
+      if (!experience.categoryId) return;
+      try {
+        const catDocRef = doc(db, 'experienceCategories', experience.categoryId);
+        const catDoc = await getDoc(catDocRef);
+        if (catDoc.exists()) {
+          const data = catDoc.data();
+          setCategoryName(data.name ?? data.title ?? experience.categoryId);
+        } else {
+          setCategoryName(experience.categoryId);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch category name:', error);
+        setCategoryName(experience.categoryId);
+      }
+    }
+    fetchCategoryName();
+  }, [experience.categoryId]);
+
+  const formatAddress = () => {
+    if (!experience.address) return null;
+    const { street, number, zipCode } = experience.address;
+    const parts = [];
+    if (street) parts.push(street);
+    if (number) parts.push(`nº ${number}`);
+    if (zipCode) parts.push(`CEP ${zipCode}`);
+    return parts.join(', ');
+  };
+
+  const formatOpeningHours = () => {
+    if (!experience.openingHours || experience.openingHours.length === 0) return null;
+
+    const daysMap: Record<string, string> = {
+      monday: 'Seg',
+      tuesday: 'Ter',
+      wednesday: 'Qua',
+      thursday: 'Qui',
+      friday: 'Sex',
+      saturday: 'Sáb',
+      sunday: 'Dom',
+    };
+
+    return experience.openingHours
+      .filter((hour) => hour.isWorkingDay !== false)
+      .map(
+        (hour) =>
+          `${daysMap[hour.dayOfWeek] || hour.dayOfWeek}: ${hour.openingHour} - ${hour.closingHour}`,
+      )
+      .join(' | ');
+  };
+
+  const formatEventDate = (value?: string) => {
+    if (!value) return null;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const isEventType =
+    (categoryName ?? '').toLowerCase().includes('evento') ||
+    Boolean(experience.eventStart || experience.eventEnd || experience.details);
+
+  return (
+    <Card
+      sx={{
+        backgroundColor: theme.palette.neutrals.formsWhite,
+        borderRadius: '1rem',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+        },
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+        <Stack spacing={1.5}>
+          {/* Nome - Categoria */}
+          <Typography
+            variant="h6"
+            color={theme.palette.neutrals.darkGrey}
+            fontWeight={600}
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {experience.name}
+            {categoryName && (
+              <Typography
+                component="span"
+                variant="body2"
+                color={theme.palette.customPrimaryShades[600]}
+                sx={{ ml: 1 }}
+              >
+                - {categoryName}
+              </Typography>
+            )}
+          </Typography>
+
+          {/* Descrição */}
+          {experience.description && (
+            <Typography
+              variant="body2"
+              color={theme.palette.neutrals.mediumGrey}
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {experience.description}
+            </Typography>
+          )}
+
+          {isEventType && (experience.details || experience.eventStart || experience.eventEnd) && (
+            <Stack spacing={0.5}>
+              <Typography
+                variant="body2"
+                color={theme.palette.customPrimaryShades[700]}
+                fontWeight={600}
+              >
+                Dados do Evento
+              </Typography>
+              {experience.eventStart && (
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  Início: {formatEventDate(experience.eventStart)}
+                </Typography>
+              )}
+              {experience.eventEnd && (
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  Fim: {formatEventDate(experience.eventEnd)}
+                </Typography>
+              )}
+              {experience.details && (
+                <Typography
+                  variant="body2"
+                  color={theme.palette.neutrals.mediumGrey}
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {experience.details}
+                </Typography>
+              )}
+            </Stack>
+          )}
+
+          <Divider />
+
+          {/* Email - Telefone */}
+          <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
+            {experience.email && (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <EmailIcon
+                  sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
+                />
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  {experience.email}
+                </Typography>
+              </Stack>
+            )}
+            {experience.phone && (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <PhoneIcon
+                  sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
+                />
+                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                  {experience.phone}
+                </Typography>
+              </Stack>
+            )}
+          </Stack>
+
+          {/* CNPJ */}
+          {experience.cnpj && (
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <BusinessIcon
+                sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
+              />
+              <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                CNPJ: {experience.cnpj}
+              </Typography>
+            </Stack>
+          )}
+
+          {/* Endereço */}
+          {formatAddress() && (
+            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+              <LocationOnIcon
+                sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
+              />
+              <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
+                {formatAddress()}
+              </Typography>
+            </Stack>
+          )}
+
+          {/* Horário de Funcionamento */}
+          {formatOpeningHours() && (
+            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+              <AccessTimeIcon
+                sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
+              />
+              <Typography
+                variant="body2"
+                color={theme.palette.neutrals.darkGrey}
+                sx={{ fontSize: '0.75rem' }}
+              >
+                {formatOpeningHours()}
+              </Typography>
+            </Stack>
+          )}
+
+          {/* Tags */}
+          {experience.tags && experience.tags.length > 0 && (
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
+              {experience.tags.slice(0, 4).map((tag, idx) => {
+                const tagLabel = typeof tag === 'string' ? tag : tag?.name || 'Tag';
+                return (
+                  <Chip
+                    key={idx}
+                    label={tagLabel}
+                    size="small"
+                    sx={{
+                      fontSize: '0.7rem',
+                      backgroundColor: theme.palette.customPrimaryShades[100],
+                      color: theme.palette.customPrimaryShades[700],
+                    }}
+                  />
+                );
+              })}
+              {experience.tags.length > 4 && (
+                <Chip
+                  label={`+${experience.tags.length - 4}`}
+                  size="small"
+                  sx={{
+                    fontSize: '0.7rem',
+                    backgroundColor: theme.palette.neutrals.lightGrey,
+                  }}
+                />
+              )}
+            </Stack>
+          )}
+        </Stack>
+      </CardContent>
+
+      <CardActions sx={{ justifyContent: 'flex-end', pt: 0, pb: 1.5 }}>
+        <IconButton
+          size="small"
+          onClick={() => onEdit(experience)}
+          sx={{
+            color: theme.palette.customPrimaryShades[600],
+            '&:hover': {
+              backgroundColor: theme.palette.customPrimaryShades[100],
+            },
+          }}
+        >
+          <EditIcon />
+        </IconButton>
+        <IconButton
+          size="small"
+          onClick={() => onDelete(experience.id)}
+          sx={{
+            color: theme.palette.error.main,
+            '&:hover': {
+              backgroundColor: theme.palette.error.light,
+            },
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </CardActions>
+    </Card>
+  );
+};

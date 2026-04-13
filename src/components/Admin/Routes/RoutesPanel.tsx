@@ -35,8 +35,9 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { RoutesModal } from '../Routes/RoutesModal';
-import { createRouteOnly, RoutePayload } from '@/utils/service';
+import { RoutesModal } from './RoutesModal';
+import { createRouteOnly, Experience, getAllExperiences, RoutePayload } from '@/utils/service';
+import { RoutesCard } from './RoutesCard';
 
 
 export const Routes = () => {
@@ -44,6 +45,7 @@ export const Routes = () => {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin } = useAuth();
 
+  const [filteredExperiences, setFilteredExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -73,10 +75,6 @@ export const Routes = () => {
     }
   };
 
-  const handleCreate = () => {
-    setModalOpen(true);
-  };
-
   const showToast = (
     message: string,
     severity: 'success' | 'error' | 'info' | 'warning' = 'info',
@@ -97,6 +95,39 @@ export const Routes = () => {
     }
     setLoading(false);
   }, [user, authLoading, isAdmin, router]);
+
+  useEffect(() => {
+    loadExperiences();
+    //loadCategories();
+  }, []);
+
+  const loadExperiences = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllExperiences();
+      setFilteredExperiences(data);
+    } catch (error) {
+      console.error('Error loading experiences:', error);
+      showToast('Erro ao carregar experiências', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (experience: Experience) => {
+    // setSelectedExperience(experience);
+    setModalOpen(true);
+  };
+
+  const handleCreate = () => {
+    // setSelectedExperience(null);
+    setModalOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    // setExperienceToDelete(id);
+    // setDeleteDialogOpen(true);
+  };
 
   if (authLoading || loading) {
     return (
@@ -188,6 +219,13 @@ export const Routes = () => {
             Nova Rota
           </GradientRoundButton>
         </Stack>
+        <Grid container spacing={3}>
+          {filteredExperiences.map((experience) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={experience.id}>
+              <RoutesCard experience={experience} onEdit={handleEdit} onDelete={handleDelete} />
+            </Grid>
+          ))}
+        </Grid>
         <RoutesModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} />
         <Snackbar
           open={toastOpen}
