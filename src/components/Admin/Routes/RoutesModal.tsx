@@ -16,7 +16,6 @@ import {
   Typography,
   useTheme,
   FormControl,
-  FormLabel,
   RadioGroup,
   FormControlLabel,
   Radio,
@@ -318,12 +317,17 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
           <Stack direction="row">
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Autocomplete
+                sx={{ fontSize: '0.9rem' }}
                 options={experienceOptions}
                 getOptionLabel={(option) => option.name}
                 value={selectedExperience || null}
-                onChange={(e, newValue) => setSelectedExperience(newValue)}
+                onChange={(_e, newValue) => setSelectedExperience(newValue)}
                 renderInput={(params) => (
-                  <TextField {...params} label="Experiência" sx={{ width: '300px' }} />
+                  <TextField
+                    {...params}
+                    label="Experiência"
+                    sx={{ width: '300px', fontSize: '0.9rem' }}
+                  />
                 )}
                 isOptionEqualToValue={(option, value) => option.id === value.id} // 👈 importante
               />
@@ -360,22 +364,67 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
                         </Box>
                       }
                     >
-                    <ListItemText primary={item.name} />
-                  </ListItem>
+                      <ListItemText
+                        primary={item.name}
+                        sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
+                      />
+                    </ListItem>
                 ))}
               </List>
             </Box>
           </Stack>
 
           <FormControl>
-            <FormLabel>Retornar ao ponto de origem?</FormLabel>
+            <Typography
+              variant="body2"
+              color={theme.palette.neutrals.darkGrey}
+              sx={{ mb: 1, fontWeight: 500 }}
+            >
+              Retornar ao ponto de origem?
+            </Typography>
             <RadioGroup
               row
               value={returnToOrigin.toString()} // precisa ser string
               onChange={handleChangeRadio}
+              sx={{ fontSize: '0.9rem', color: theme.palette.neutrals.mediumGrey }}
             >
-              <FormControlLabel value="true" control={<Radio />} label="Sim" />
-              <FormControlLabel value="false" control={<Radio />} label="Não" />
+              <FormControlLabel
+                value="true"
+                control={
+                  <Radio
+                    sx={{
+                      color: theme.palette.neutrals.mediumGrey,
+                      '&.Mui-checked': { color: theme.palette.customPrimaryShades[700] },
+                      transform: 'scale(0.85)',
+                    }}
+                  />
+                }
+                label="Sim"
+                sx={{
+                  '.MuiTypography-root': {
+                    fontSize: '0.9rem',
+                    color: theme.palette.neutrals.mediumGrey,
+                  },
+                }}
+              />
+              <FormControlLabel 
+                value="false"
+                control={
+                  <Radio
+                    sx={{
+                      color: theme.palette.neutrals.mediumGrey,
+                      '&.Mui-checked': { color: theme.palette.customPrimaryShades[700] },
+                      transform: 'scale(0.85)',
+                    }}
+                  />
+                }
+                label="Não"
+                sx={{
+                  '.MuiTypography-root': {
+                    fontSize: '0.9rem',
+                    color: theme.palette.neutrals.mediumGrey,
+                  },
+                }} />
             </RadioGroup>
           </FormControl>
 
