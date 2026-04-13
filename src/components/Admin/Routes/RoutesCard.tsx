@@ -7,15 +7,10 @@ import {
   IconButton,
   Stack,
   useTheme,
-  Chip,
   Divider,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EmailIcon from '@mui/icons-material/Email';
-import PhoneIcon from '@mui/icons-material/Phone';
-import BusinessIcon from '@mui/icons-material/Business';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { Experience } from '@/utils/service';
 import { db } from '@/lib/firebase';
@@ -52,16 +47,6 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
     fetchCategoryName();
   }, [experience.categoryId]);
 
-  const formatAddress = () => {
-    if (!experience.address) return null;
-    const { street, number, zipCode } = experience.address;
-    const parts = [];
-    if (street) parts.push(street);
-    if (number) parts.push(`nº ${number}`);
-    if (zipCode) parts.push(`CEP ${zipCode}`);
-    return parts.join(', ');
-  };
-
   const formatOpeningHours = () => {
     if (!experience.openingHours || experience.openingHours.length === 0) return null;
 
@@ -83,23 +68,6 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
       )
       .join(' | ');
   };
-
-  const formatEventDate = (value?: string) => {
-    if (!value) return null;
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    return parsed.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const isEventType =
-    (categoryName ?? '').toLowerCase().includes('evento') ||
-    Boolean(experience.eventStart || experience.eventEnd || experience.details);
 
   return (
     <Card
@@ -143,109 +111,11 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
             )}
           </Typography>
 
-          {/* Descrição */}
-          {experience.description && (
-            <Typography
-              variant="body2"
-              color={theme.palette.neutrals.mediumGrey}
-              sx={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {experience.description}
-            </Typography>
-          )}
-
-          {isEventType && (experience.details || experience.eventStart || experience.eventEnd) && (
-            <Stack spacing={0.5}>
-              <Typography
-                variant="body2"
-                color={theme.palette.customPrimaryShades[700]}
-                fontWeight={600}
-              >
-                Dados do Evento
-              </Typography>
-              {experience.eventStart && (
-                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                  Início: {formatEventDate(experience.eventStart)}
-                </Typography>
-              )}
-              {experience.eventEnd && (
-                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                  Fim: {formatEventDate(experience.eventEnd)}
-                </Typography>
-              )}
-              {experience.details && (
-                <Typography
-                  variant="body2"
-                  color={theme.palette.neutrals.mediumGrey}
-                  sx={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {experience.details}
-                </Typography>
-              )}
-            </Stack>
-          )}
-
           <Divider />
 
-          {/* Email - Telefone */}
-          <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
-            {experience.email && (
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <EmailIcon
-                  sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
-                />
-                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                  {experience.email}
-                </Typography>
-              </Stack>
-            )}
-            {experience.phone && (
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <PhoneIcon
-                  sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
-                />
-                <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                  {experience.phone}
-                </Typography>
-              </Stack>
-            )}
-          </Stack>
-
-          {/* CNPJ */}
-          {experience.cnpj && (
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <BusinessIcon
-                sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600] }}
-              />
-              <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                CNPJ: {experience.cnpj}
-              </Typography>
-            </Stack>
-          )}
-
-          {/* Endereço */}
-          {formatAddress() && (
-            <Stack direction="row" spacing={0.5} alignItems="flex-start">
-              <LocationOnIcon
-                sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
-              />
-              <Typography variant="body2" color={theme.palette.neutrals.darkGrey}>
-                {formatAddress()}
-              </Typography>
-            </Stack>
-          )}
+          {/* <LocationOnIcon
+        sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
+        /> */}
 
           {/* Horário de Funcionamento */}
           {formatOpeningHours() && (
@@ -264,9 +134,9 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
           )}
 
           {/* Tags */}
-          {experience.tags && experience.tags.length > 0 && (
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}>
-              {experience.tags.slice(0, 4).map((tag, idx) => {
+          {/* {experience.tags && experience.tags.length > 0 && (
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}> */}
+          {/* {experience.tags.slice(0, 4).map((tag, idx) => {
                 const tagLabel = typeof tag === 'string' ? tag : tag?.name || 'Tag';
                 return (
                   <Chip
@@ -280,8 +150,8 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
                     }}
                   />
                 );
-              })}
-              {experience.tags.length > 4 && (
+              })} */}
+          {/* {experience.tags.length > 4 && (
                 <Chip
                   label={`+${experience.tags.length - 4}`}
                   size="small"
@@ -290,9 +160,9 @@ export const RoutesCard = ({ experience, onEdit, onDelete }: ExperienceCardProps
                     backgroundColor: theme.palette.neutrals.lightGrey,
                   }}
                 />
-              )}
-            </Stack>
-          )}
+              )} */}
+          {/* </Stack>
+          )} */}
         </Stack>
       </CardContent>
 
