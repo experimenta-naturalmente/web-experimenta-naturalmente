@@ -14,6 +14,10 @@ import {
   CardContent,
   IconButton,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   DndContext,
@@ -36,7 +40,7 @@ import { useRouter } from 'next/navigation';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { RoutesModal } from './RoutesModal';
-import { createRouteOnly, Experience, getAllExperiences, getAllRoutes, Route, RoutePayload } from '@/utils/service';
+import { createRouteOnly, deleteRoute, Experience, getAllExperiences, getAllRoutes, Route, RoutePayload } from '@/utils/service';
 import { RoutesCard } from './RoutesCard';
 
 
@@ -52,6 +56,8 @@ export const Routes = () => {
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
     'success',
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [routeToDelete, setRouteToDelete] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -125,8 +131,24 @@ export const Routes = () => {
   };
 
   const handleDelete = (id: string) => {
-    // setExperienceToDelete(id);
-    // setDeleteDialogOpen(true);
+    setRouteToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!routeToDelete) return;
+
+    try {
+      await deleteRoute(routeToDelete);
+      showToast('Rota deletada com sucesso', 'success');
+      await loadExperiences();
+    } catch (error) {
+      console.error('Error deleting route:', error);
+      showToast('Erro ao deletar rota', 'error');
+    } finally {
+      setDeleteDialogOpen(false);
+      setRouteToDelete(null);
+    }
   };
 
   if (authLoading || loading) {
@@ -227,6 +249,41 @@ export const Routes = () => {
           ))}
         </Grid>
         <RoutesModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} />
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          PaperProps={{
+            sx: { borderRadius: '1rem' },
+          }}
+        >
+          <DialogTitle>
+            <Typography variant="h5" fontWeight={600}>
+              Confirmar exclusão
+            </Typography>
+          </DialogTitle>
+          <DialogContent>
+            <Typography>Tem certeza que deseja deletar esta rota?</Typography>
+            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+              Esta ação não pode ser desfeita.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{ color: theme.palette.neutrals.mediumGrey }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              variant="contained"
+              color="error"
+              sx={{ borderRadius: '8px' }}
+            >
+              Deletar
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Snackbar
           open={toastOpen}
           autoHideDuration={4000}

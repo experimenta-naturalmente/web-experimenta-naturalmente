@@ -229,6 +229,12 @@ export async function deleteExperience(id: string): Promise<void> {
   await deleteDoc(docRef);
 }
 
+// Delete route
+export async function deleteRoute(id: string): Promise<void> {
+  const docRef = doc(db, 'routes', id);
+  await deleteDoc(docRef);
+}
+
 // Get user data from Firestore
 export async function getUserData(uid: string): Promise<UserData | null> {
   try {
