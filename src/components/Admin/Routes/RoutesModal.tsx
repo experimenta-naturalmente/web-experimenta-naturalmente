@@ -136,7 +136,6 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
           });
         });
         setExperienceOptions(experiences);
-        console.log(experiences);
       } catch (e) {
         console.warn('Failed to load experiences', e);
       }
