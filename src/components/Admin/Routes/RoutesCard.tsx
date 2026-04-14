@@ -12,23 +12,24 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+// import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { Route } from '@/utils/service';
 
-interface ExperienceCardProps {
+interface RouteCardProps {
   route: Route;
   onEdit: (route: Route) => void;
   onDelete: (id: string) => void;
 }
 
-export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCardProps) => {
+export const RoutesCard = ({ route: route, onEdit, onDelete }: RouteCardProps) => {
   const theme = useTheme();
 
   const formatOpeningHours = () => {
-    if (!experience.openingHours || experience.openingHours.length === 0) return null;
+    if (!route.openingHours || route.openingHours.length === 0) return null;
 
     const daysMap: Record<string, string> = {
       monday: 'Seg',
@@ -40,7 +41,7 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
       sunday: 'Dom',
     };
 
-    return experience.openingHours
+    return route.openingHours
       .filter((hour) => hour.isWorkingDay !== false)
       .map(
         (hour) =>
@@ -78,19 +79,19 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
               whiteSpace: 'nowrap',
             }}
           >
-            {experience.name}
+            {route.name}
           </Typography>
 
           <Divider />
 
-          {experience.experienceList && experience.experienceList.length > 0 && (
-            <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
-              {experience.experienceList
+          {route.experienceList && route.experienceList.length > 0 && (
+            <List dense sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+              {route.experienceList
                 ?.sort((a, b) => a.order - b.order)
                 .slice(0, 3)
                 .map((item) => (
                   <ListItem sx={{ mr: '6.25rem' }} key={item.id}>
-                    <RadioButtonUncheckedIcon
+                    <LocationOnIcon
                       sx={{
                         mr: '0.6rem',
                         fontSize: '1rem',
@@ -98,6 +99,14 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
                         mt: 0.2,
                       }}
                     />
+                    {/* <RadioButtonUncheckedIcon
+                      sx={{
+                        mr: '0.6rem',
+                        fontSize: '1rem',
+                        color: theme.palette.customPrimaryShades[600],
+                        mt: 0.2,
+                      }}
+                    /> */}
                     <ListItemText
                       primary={item.name}
                       sx={{
@@ -109,20 +118,16 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
                     />
                   </ListItem>
                 ))}
-              {experience.experienceList.length > 3 && (
+              {route.experienceList.length > 3 && (
                 <ListItem sx={{ mr: '6.25rem' }}>
                   <ListItemText
-                    primary={`+${experience.experienceList.length - 3}`}
+                    primary={`+${route.experienceList.length - 3}`}
                     sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
                   />
                 </ListItem>
               )}
             </List>
           )}
-
-          {/* <LocationOnIcon
-        sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
-        /> */}
 
           <Divider />
 
@@ -147,7 +152,7 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
       <CardActions sx={{ justifyContent: 'flex-end', pt: 0, pb: 1.5 }}>
         <IconButton
           size="small"
-          onClick={() => onEdit(experience)}
+          onClick={() => onEdit(route)}
           sx={{
             color: theme.palette.customPrimaryShades[600],
             '&:hover': {
@@ -159,7 +164,7 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
         </IconButton>
         <IconButton
           size="small"
-          onClick={() => onDelete(experience.id)}
+          onClick={() => onDelete(route.id)}
           sx={{
             color: theme.palette.error.main,
             '&:hover': {
