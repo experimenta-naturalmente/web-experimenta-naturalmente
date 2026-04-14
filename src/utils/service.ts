@@ -223,6 +223,18 @@ export async function updateExperience(
   });
 }
 
+// Update experience
+// eslint-disable-next-line prettier/prettier
+export async function updateRoute(
+  id: string,
+  route: Partial<ExperiencePayload>,
+): Promise<void> {
+  const docRef = doc(db, 'routes', id);
+  await updateDoc(docRef, {
+    ...route,
+  });
+}
+
 // Delete experience
 export async function deleteExperience(id: string): Promise<void> {
   const docRef = doc(db, 'experiences', id);

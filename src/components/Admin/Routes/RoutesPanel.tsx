@@ -9,38 +9,33 @@ import {
   Snackbar,
   Button,
   TextField,
-  Box,
-  Card,
-  CardContent,
-  IconButton,
   InputAdornment,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import {
-  DndContext,
-  closestCenter
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+// import {
+//   DndContext,
+//   closestCenter
+// } from "@dnd-kit/core";
+// import {
+//   SortableContext,
+//   useSortable,
+//   verticalListSortingStrategy,
+//   arrayMove
+// } from "@dnd-kit/sortable";
+// import { CSS } from "@dnd-kit/utilities";
 import SearchIcon from '@mui/icons-material/Search';
-import DeleteIcon from '@mui/icons-material/Delete';
 import backgroundImg from '@/assets/BackgroundRegister.png';
 import { TopBar } from '@/components/TopBar/TopBar';
 import { GradientRoundButton } from '@/components/UI/Buttons/RoundButton.style';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+// import { collection, getDocs } from 'firebase/firestore';
+// import { db } from '@/lib/firebase';
 import { RoutesModal } from './RoutesModal';
-import { createRouteOnly, deleteRoute, Experience, getAllExperiences, getAllRoutes, Route, RoutePayload } from '@/utils/service';
+import { createRouteOnly, deleteRoute, getAllRoutes, Route, RoutePayload, updateRoute } from '@/utils/service';
 import { RoutesCard } from './RoutesCard';
 
 
@@ -49,21 +44,24 @@ export const Routes = () => {
   const router = useRouter();
   const { user, loading: authLoading, isAdmin } = useAuth();
 
-  const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastSeverity, setToastSeverity] = useState<'success' | 'error' | 'info' | 'warning'>(
     'success',
   );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [routeToDelete, setRouteToDelete] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [filteredRoutes, setFilteredRoutes] = useState<Route[]>([]);
+  const [routeToDelete, setRouteToDelete] = useState<string | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
   const handleSave = async (routeData: Partial<RoutePayload> & { id?: string }) => {
     try {
       if (routeData.id) {
+        const { id, ...updateData } = routeData;
+        await updateRoute(id, updateData);
         showToast('Rota atualizada com sucesso', 'success');
       } else {
         // Create new
@@ -74,6 +72,7 @@ export const Routes = () => {
         await createRouteOnly(routeData as RoutePayload, user.uid);
         showToast('Rota criada com sucesso', 'success');
       }
+      await loadRoutes();
       setModalOpen(false);
     } catch (error) {
       console.error('Error saving route:', error);
@@ -103,11 +102,11 @@ export const Routes = () => {
   }, [user, authLoading, isAdmin, router]);
 
   useEffect(() => {
-    loadExperiences();
+    loadRoutes();
     //loadCategories();
   }, []);
 
-  const loadExperiences = async () => {
+  const loadRoutes = async () => {
     try {
       setLoading(true);
       const data = await getAllRoutes();
@@ -121,12 +120,12 @@ export const Routes = () => {
   };
 
   const handleEdit = (route: Route) => {
-    // setSelectedExperience(experience);
+    setSelectedRoute(route);
     setModalOpen(true);
   };
 
   const handleCreate = () => {
-    // setSelectedExperience(null);
+    setSelectedRoute(null);
     setModalOpen(true);
   };
 
@@ -141,7 +140,7 @@ export const Routes = () => {
     try {
       await deleteRoute(routeToDelete);
       showToast('Rota deletada com sucesso', 'success');
-      await loadExperiences();
+      await loadRoutes();
     } catch (error) {
       console.error('Error deleting route:', error);
       showToast('Erro ao deletar rota', 'error');
@@ -248,7 +247,12 @@ export const Routes = () => {
             </Grid>
           ))}
         </Grid>
-        <RoutesModal open={modalOpen} onClose={() => setModalOpen(false)} onSave={handleSave} />
+        <RoutesModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={handleSave}
+          route={selectedRoute}
+        />
         <Dialog
           open={deleteDialogOpen}
           onClose={() => setDeleteDialogOpen(false)}
