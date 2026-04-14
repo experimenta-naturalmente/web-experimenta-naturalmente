@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -10,9 +10,9 @@ import {
   Divider,
   List,
   ListItem,
-  Box,
   ListItemText,
 } from '@mui/material';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -83,22 +83,48 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
 
           <Divider />
 
-          <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
-            {experience.experienceList
-              ?.sort((a, b) => a.order - b.order)
-              .map((item, index) => (
-                <ListItem sx={{ mr: '6.25rem' }} key={item.id}>
+          {experience.experienceList && experience.experienceList.length > 0 && (
+            <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+              {experience.experienceList
+                ?.sort((a, b) => a.order - b.order)
+                .slice(0, 3)
+                .map((item) => (
+                  <ListItem sx={{ mr: '6.25rem' }} key={item.id}>
+                    <RadioButtonUncheckedIcon
+                      sx={{
+                        mr: '0.6rem',
+                        fontSize: '1rem',
+                        color: theme.palette.customPrimaryShades[600],
+                        mt: 0.2,
+                      }}
+                    />
+                    <ListItemText
+                      primary={item.name}
+                      sx={{
+                        '.MuiTypography-root': {
+                          fontSize: '1.2rem',
+                          color: theme.palette.customPrimaryShades[600],
+                        },
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              {experience.experienceList.length > 3 && (
+                <ListItem sx={{ mr: '6.25rem' }}>
                   <ListItemText
-                    primary={item.name}
+                    primary={`+${experience.experienceList.length - 3}`}
                     sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
                   />
                 </ListItem>
-              ))}
-          </List>
+              )}
+            </List>
+          )}
 
           {/* <LocationOnIcon
         sx={{ fontSize: '1rem', color: theme.palette.customPrimaryShades[600], mt: 0.2 }}
         /> */}
+
+          <Divider />
 
           {/* Horário de Funcionamento */}
           {formatOpeningHours() && (
@@ -115,37 +141,6 @@ export const RoutesCard = ({ route: experience, onEdit, onDelete }: ExperienceCa
               </Typography>
             </Stack>
           )}
-
-          {/* Tags */}
-          {/* {experience.tags && experience.tags.length > 0 && (
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" gap={0.5}> */}
-          {/* {experience.tags.slice(0, 4).map((tag, idx) => {
-                const tagLabel = typeof tag === 'string' ? tag : tag?.name || 'Tag';
-                return (
-                  <Chip
-                    key={idx}
-                    label={tagLabel}
-                    size="small"
-                    sx={{
-                      fontSize: '0.7rem',
-                      backgroundColor: theme.palette.customPrimaryShades[100],
-                      color: theme.palette.customPrimaryShades[700],
-                    }}
-                  />
-                );
-              })} */}
-          {/* {experience.tags.length > 4 && (
-                <Chip
-                  label={`+${experience.tags.length - 4}`}
-                  size="small"
-                  sx={{
-                    fontSize: '0.7rem',
-                    backgroundColor: theme.palette.neutrals.lightGrey,
-                  }}
-                />
-              )} */}
-          {/* </Stack>
-          )} */}
         </Stack>
       </CardContent>
 
