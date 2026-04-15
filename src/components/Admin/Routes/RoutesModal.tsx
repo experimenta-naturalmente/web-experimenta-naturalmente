@@ -26,7 +26,7 @@ import Input from '@/components/Inputs/Input/Input';
 import OpeningHoursInput from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import type { OpeningHours as OpeningHoursMap } from '@/components/Inputs/OpeningHoursInput/OpeningHoursInput';
 import bussinessIcon from '@/assets/BussinessIcon.png';
-import { ExperienceRoute, OpeningHourItem, RoutePayload } from '@/utils/service';
+import { ExperienceRoute, OpeningHourItem, Route, RoutePayload } from '@/utils/service';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -34,7 +34,7 @@ interface RoutesModalProps {
   open: boolean;
   onClose: () => void;
   onSave: (route: Partial<RoutePayload> & { id?: string }) => Promise<void>;
-  route?: RoutePayload | null;
+  route?: Route | null;
 }
 
 export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) => {
@@ -46,16 +46,12 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   const [openingHoursMap, setOpeningHoursMap] = useState<OpeningHoursMap | undefined>(undefined);
   const [originalOpeningHours, setOriginalOpeningHours] = useState<OpeningHourItem[] | undefined>(undefined);
   const [openingHoursModified, setOpeningHoursModified] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<ExperienceRoute | null>(null);
-  const [experienceList, setExperienceList] = useState<ExperienceRoute[]>([]);
   const [returnToOrigin, setReturnToOrigin] = useState(false);
-
-  type ExperienceOptions = {
-    id: number;
-    name: string;
-    order: number;
-  };
-  const [experienceOptions, setExperienceOptions] = useState<ExperienceOptions[]>([]);
+  const [selectedExperience, setSelectedExperience] = useState<ExperienceRoute | null>(null);
+  // Options to select
+  const [experienceOptions, setExperienceOptions] = useState<ExperienceRoute[]>([]);
+  // Selected and order list
+  const [experienceList, setExperienceList] = useState<ExperienceRoute[] | undefined>(undefined);
 
   const DAY_KEY_TO_NAME: Record<string, string> = {
     mon: 'monday',
@@ -78,7 +74,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     const exists = experienceList?.find((exp) => exp.id === selectedExperience.id);
     if (exists) return;
     // Adiciona à lista
-    setExperienceList([...experienceList, selectedExperience]);
+    setExperienceList([...(experienceList ?? []), selectedExperience]);
     // Limpa seleção
   };
 
@@ -147,6 +143,8 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     if (route) {
       setRouteName(route.name || '');
 
+      setExperienceList(route.experienceList);
+
       // Salvar horários de funcionamento originais
       setOriginalOpeningHours(route.openingHours);
 
@@ -212,6 +210,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
     } else {
       // Reset form for new experience
       setRouteName('');
+      setExperienceList([]);
       setOpeningHoursMap(undefined);
       setOriginalOpeningHours(undefined);
       setOpeningHoursModified(false);
@@ -247,7 +246,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
         openingHours = undefined;
       }
 
-      const routeData: Partial<RoutePayload> = {
+      const routeData: Partial<RoutePayload> & { id?: string } = {
         name: routeName,
         isLoop: returnToOrigin,
         ...(openingHours ? { openingHours } : {}),
@@ -259,7 +258,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
       //experiences?: ExperienceRoute[];
 
       if (isEdit) {
-        routeData.name = route.name;
+        routeData.id = route.id;
       }
 
       const estimatedBytes = new TextEncoder().encode(JSON.stringify(routeData)).length;
@@ -368,7 +367,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
                         sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
                       />
                     </ListItem>
-                ))}
+                  ))}
               </List>
             </Box>
           </Stack>
@@ -406,7 +405,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
                   },
                 }}
               />
-              <FormControlLabel 
+              <FormControlLabel
                 value="false"
                 control={
                   <Radio
@@ -423,7 +422,8 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
                     fontSize: '0.9rem',
                     color: theme.palette.neutrals.mediumGrey,
                   },
-                }} />
+                }}
+              />
             </RadioGroup>
           </FormControl>
 
