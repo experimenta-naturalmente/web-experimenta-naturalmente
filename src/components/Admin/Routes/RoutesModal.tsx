@@ -140,10 +140,13 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
   }, [isEdit]);
 
   useEffect(() => {
+    // Edit Load Data
     if (route) {
       setRouteName(route.name || '');
 
       setExperienceList(route.experienceList);
+
+      setReturnToOrigin(route.isLoop);
 
       // Salvar horários de funcionamento originais
       setOriginalOpeningHours(route.openingHours);
