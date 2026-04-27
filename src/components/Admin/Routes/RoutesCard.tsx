@@ -14,6 +14,8 @@ import {
 } from '@mui/material';
 // import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LoopIcon from '@mui/icons-material/Loop';
+import FlagIcon from '@mui/icons-material/Flag';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -127,6 +129,44 @@ export const RoutesCard = ({ route: route, onEdit, onDelete }: RouteCardProps) =
                 </ListItem>
               )}
             </List>
+          )}
+
+          {route.isLoop ? (
+            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+              <LoopIcon
+                sx={{
+                  mr: '0.6rem',
+                  fontSize: '1rem',
+                  color: theme.palette.customPrimaryShades[600],
+                  mt: 0.2,
+                }}
+              />
+              <Typography
+                variant="body2"
+                color={theme.palette.neutrals.darkGrey}
+                sx={{ mb: 1, fontWeight: 500, fontSize: '0.9rem' }}
+              >
+                Volta ao início
+              </Typography>
+            </Stack>
+          ) : (
+            <Stack direction="row" spacing={0.5} alignItems="flex-start">
+              <FlagIcon
+                sx={{
+                  mr: '0.6rem',
+                  fontSize: '1rem',
+                  color: theme.palette.customPrimaryShades[600],
+                  mt: 0.2,
+                }}
+              />
+              <Typography
+                variant="body2"
+                color={theme.palette.neutrals.darkGrey}
+                sx={{ mb: 1, fontWeight: 500, fontSize: '0.9rem' }}
+              >
+                Termina no destino
+              </Typography>
+            </Stack>
           )}
 
           <Divider />
