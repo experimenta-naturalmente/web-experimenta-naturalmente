@@ -338,37 +338,56 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
                 Adicionar
               </Button>
 
-              <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
-                {experienceList
-                  ?.sort((a, b) => a.order - b.order)
-                  .map((item, index) => (
-                    <ListItem
-                      sx={{ mr: '6.25rem' }}
-                      key={item.id}
-                      secondaryAction={
-                        <Box>
-                          <IconButton onClick={() => moveItem(index, 'up')} disabled={index === 0}>
-                            <ArrowUpward />
-                          </IconButton>
-                          <IconButton
-                            onClick={() => moveItem(index, 'down')}
-                            disabled={index === experienceList?.length - 1}
-                          >
-                            <ArrowDownward />
-                          </IconButton>
-                          <IconButton onClick={() => removeItem(item.id)}>
-                            <Delete />
-                          </IconButton>
-                        </Box>
-                      }
-                    >
-                      <ListItemText
-                        primary={item.name}
-                        sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
-                      />
-                    </ListItem>
-                  ))}
-              </List>
+              <Stack>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.neutrals.darkGrey}
+                  sx={{ mb: 1, fontWeight: 500 }}
+                >
+                  Início
+                </Typography>
+                <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+                  {experienceList
+                    ?.sort((a, b) => a.order - b.order)
+                    .map((item, index) => (
+                      <ListItem
+                        sx={{ mr: '6.25rem' }}
+                        key={item.id}
+                        secondaryAction={
+                          <Box>
+                            <IconButton
+                              onClick={() => moveItem(index, 'up')}
+                              disabled={index === 0}
+                            >
+                              <ArrowUpward />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => moveItem(index, 'down')}
+                              disabled={index === experienceList?.length - 1}
+                            >
+                              <ArrowDownward />
+                            </IconButton>
+                            <IconButton onClick={() => removeItem(item.id)}>
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        }
+                      >
+                        <ListItemText
+                          primary={item.name}
+                          sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
+                        />
+                      </ListItem>
+                    ))}
+                </List>
+                <Typography
+                  variant="body2"
+                  color={theme.palette.neutrals.darkGrey}
+                  sx={{ mb: 1, fontWeight: 500 }}
+                >
+                  Destino
+                </Typography>
+              </Stack>
             </Box>
           </Stack>
 
