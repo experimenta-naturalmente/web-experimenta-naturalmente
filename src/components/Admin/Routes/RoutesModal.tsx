@@ -214,6 +214,7 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
       // Reset form for new experience
       setRouteName('');
       setExperienceList([]);
+      setReturnToOrigin(false);
       setOpeningHoursMap(undefined);
       setOriginalOpeningHours(undefined);
       setOpeningHoursModified(false);
