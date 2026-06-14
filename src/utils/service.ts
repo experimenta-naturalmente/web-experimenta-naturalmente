@@ -47,6 +47,19 @@ export type ExperiencePayload = {
   tags?: Tag[];
 };
 
+export type ExperienceRoute = {
+  id: number;
+  name: string;
+  order: number;
+};
+
+export type RoutePayload = {
+  name: string;
+  isLoop: boolean;
+  openingHours?: OpeningHourItem[];
+  experienceList?: ExperienceRoute[];
+};
+
 export type UserPayload = {
   email: string;
   password: string;
@@ -128,8 +141,24 @@ export async function createExperienceOnly(experience: ExperiencePayload, ownerI
   return docRef.id;
 }
 
+export async function createRouteOnly(route: RoutePayload, ownerId: string) {
+  const routesCol = collection(db, 'routes');
+  const docRef = await addDoc(routesCol, {
+    ...route,
+    ownerId: ownerId,
+    createdAt: serverTimestamp(),
+  });
+  return docRef.id;
+}
+
 // Experience type with ID for admin panel
 export type Experience = ExperiencePayload & {
+  id: string;
+  createdAt?: Date | FieldValue;
+};
+
+// Experience type with ID for routes panel
+export type Route = RoutePayload & {
   id: string;
   createdAt?: Date | FieldValue;
 };
@@ -149,6 +178,23 @@ export async function getAllExperiences(): Promise<Experience[]> {
   });
 
   return experiences;
+}
+
+// Get all routes
+export async function getAllRoutes(): Promise<Route[]> {
+  const routesCol = collection(db, 'routes');
+  const snapshot = await getDocs(routesCol);
+  const routes: Route[] = [];
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    routes.push({
+      id: doc.id,
+      ...data,
+    } as Route);
+  });
+
+  return routes;
 }
 
 // Get single experience by ID
@@ -177,9 +223,27 @@ export async function updateExperience(
   });
 }
 
+// Update experience
+// eslint-disable-next-line prettier/prettier
+export async function updateRoute(
+  id: string,
+  route: Partial<ExperiencePayload>,
+): Promise<void> {
+  const docRef = doc(db, 'routes', id);
+  await updateDoc(docRef, {
+    ...route,
+  });
+}
+
 // Delete experience
 export async function deleteExperience(id: string): Promise<void> {
   const docRef = doc(db, 'experiences', id);
+  await deleteDoc(docRef);
+}
+
+// Delete route
+export async function deleteRoute(id: string): Promise<void> {
+  const docRef = doc(db, 'routes', id);
   await deleteDoc(docRef);
 }
 
