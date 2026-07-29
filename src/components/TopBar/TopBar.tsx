@@ -1,5 +1,14 @@
-import { Box, ButtonGroup, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
-import React from 'react';
+import {
+  Box,
+  ButtonGroup,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from '@mui/material';
+import React, { useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TopBarContainer } from './TopBar.style';
 import { NavigationButton } from './NavigationButton/NavigationButton';
@@ -21,7 +30,7 @@ type TopBarProps = { isRegister?: boolean; isLogin?: boolean };
 export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => {
   const { user, isAdmin } = useAuth();
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -34,19 +43,24 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
 
   return (
     <TopBarContainer>
+      {/* Mobile hamburger button*/}
+      <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
+        <IconButton aria-label="menu" onClick={() => setOpen(true)}>
+          <MenuIcon sx={{ color: '#ffffff' }} />
+        </IconButton>
+      </Box>
+
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-        <Logo style={{ height: '6.8rem', width: 'auto', cursor: 'pointer' }}  sx={{
-                 [theme.breakpoints.down('sm')]: {
-                   height: '4.8rem',
-                 }
-               }}/>
+        <Logo
+          style={{ height: '6.8rem', width: 'auto', cursor: 'pointer' }}
+          sx={{
+            [theme.breakpoints.down('sm')]: {
+              height: '4.8rem',
+            },
+          }}
+        />
       </Link>
-      <Box
-        sx={{
-          display: 'flex',
-          gap: '1rem',
-        }}
-      >
+      <Box sx={{ display: 'flex', gap: '1rem'}}>
         {/* Desktop navigation */}
         <ButtonGroup sx={{ gap: '1rem', display: { xs: 'none', sm: 'flex' } }}>
           <NavigationButton label="Home" href="/#home" />
@@ -81,7 +95,10 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
                 </ColoredRoundButton>
               </Link>
             )}
-            <LightRoundButton onClick={handleLogout} sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
+            <LightRoundButton
+              onClick={handleLogout}
+              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+            >
               <LogoutIcon sx={{ height: '1.1rem' }} />
               Sair
             </LightRoundButton>
@@ -91,7 +108,9 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
             {/* Usuário não logado */}
             {!isLogin && (
               <Link href="/login" style={{ textDecoration: 'none' }}>
-                <LightRoundButton sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>Entrar</LightRoundButton>
+                <LightRoundButton sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
+                  Entrar
+                </LightRoundButton>
               </Link>
             )}
             {!isRegister && (
@@ -104,15 +123,13 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
             )}
           </>
         )}
-        {/* Mobile hamburger */}
-        <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
-          <IconButton aria-label="menu" onClick={() => setOpen(true)}>
-            <MenuIcon sx={{ color: '#ffffff' }} />
-          </IconButton>
-        </Box>
-
-        <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-          <Box sx={{ width: 260, padding: '1rem' }} role="presentation" onClick={() => setOpen(false)}>
+        {/* Mobile hamburger list*/}
+        <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
+          <Box
+            sx={{ width: 260, padding: '1rem' }}
+            role="presentation"
+            onClick={() => setOpen(false)}
+          >
             <List>
               <ListItem disablePadding>
                 <ListItemButton component={Link} href="/#home">
@@ -135,7 +152,9 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
                 </ListItemButton>
               </ListItem>
             </List>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}
+            >
               {user ? (
                 <>
                   {isAdmin ? (
