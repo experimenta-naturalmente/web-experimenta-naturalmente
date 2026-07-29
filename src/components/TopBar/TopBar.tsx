@@ -43,13 +43,6 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
 
   return (
     <TopBarContainer>
-      {/* Mobile hamburger button*/}
-      <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-        <IconButton aria-label="menu" onClick={() => setOpen(true)}>
-          <MenuIcon sx={{ color: '#ffffff' }} />
-        </IconButton>
-      </Box>
-
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
         <Logo
           style={{ width: 'auto', cursor: 'pointer' }}
@@ -89,7 +82,7 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
         </ButtonGroup>
 
         {user ? (
-          <>
+          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             {/* Usuário logado */}
             {isAdmin ? (
               <>
@@ -121,7 +114,7 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
               <LogoutIcon sx={{ height: '1.1rem' }} />
               Sair
             </LightRoundButton>
-          </>
+          </Box>
         ) : (
           <>
             {/* Usuário não logado */}
@@ -142,8 +135,13 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
             )}
           </>
         )}
-        {/* Mobile hamburger list*/}
-        <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
+        {/* Mobile hamburger*/}
+        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+          <IconButton aria-label="menu" onClick={() => setOpen(true)}>
+            <MenuIcon sx={{ color: '#ffffff' }} />
+          </IconButton>
+        </Box>
+        <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
           <Box
             sx={{ width: 260, padding: '1rem' }}
             role="presentation"
@@ -177,12 +175,20 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
               {user ? (
                 <>
                   {isAdmin ? (
-                    <Link href="/admin" style={{ textDecoration: 'none' }}>
-                      <ColoredRoundButton>
-                        <BusinessIcon sx={{ height: '1.1rem' }} />
-                        Experiências
-                      </ColoredRoundButton>
-                    </Link>
+                    <>
+                      <Link href="/admin" style={{ textDecoration: 'none' }}>
+                        <ColoredRoundButton>
+                          <BusinessIcon sx={{ height: '1.1rem' }} />
+                          Experiências
+                        </ColoredRoundButton>
+                      </Link>
+                      <Link href="/routes" style={{ textDecoration: 'none' }}>
+                        <ColoredRoundButton>
+                          <PlaceIcon sx={{ height: '1.1rem' }} />
+                          Rotas
+                        </ColoredRoundButton>
+                      </Link>
+                    </>
                   ) : (
                     <Link href="/home" style={{ textDecoration: 'none' }}>
                       <ColoredRoundButton>
