@@ -241,7 +241,7 @@ export const AdminPanel = () => {
         </Stack>
 
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: 'column', md: 'row' }}
           justifyContent="space-evenly"
           alignItems="center"
           gap={2}
@@ -263,7 +263,7 @@ export const AdminPanel = () => {
                   border: '1px solid ' + theme.palette.neutrals.mediumGrey,
                 },
                 height: '2.75rem',
-                width: { xs: '100%', sm: '600px' },
+                width: { xs: '100%', md: '600px' },
                 fontSize: '0.95rem',
               },
             }}
