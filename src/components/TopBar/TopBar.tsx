@@ -44,7 +44,7 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
   return (
     <TopBarContainer>
       {/* Mobile hamburger button*/}
-      <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
+      <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
         <IconButton aria-label="menu" onClick={() => setOpen(true)}>
           <MenuIcon sx={{ color: '#ffffff' }} />
         </IconButton>
@@ -52,17 +52,36 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
 
       <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
         <Logo
-          style={{ height: '6.8rem', width: 'auto', cursor: 'pointer' }}
+          style={{ width: 'auto', cursor: 'pointer' }}
           sx={{
-            [theme.breakpoints.down('sm')]: {
-              height: '4.8rem',
+            height: {
+              xs: '4.8rem',
+              sm: '5.5rem',
+              md: '6rem',
+              lg: '6.8rem',
             },
           }}
         />
       </Link>
-      <Box sx={{ display: 'flex', gap: '1rem'}}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: {
+            sm: '0.5rem',
+            md: '0.75rem',
+            lg: '1rem',
+          },
+        }}
+      >
         {/* Desktop navigation */}
-        <ButtonGroup sx={{ gap: '1rem', display: { xs: 'none', sm: 'flex' } }}>
+        <ButtonGroup sx={{ gap: {
+              sm: '0.5rem',
+              md: '0.75rem',
+              lg: '1rem',
+            },
+            display: { xs: 'none', md: 'flex' },
+          }}
+        >
           <NavigationButton label="Home" href="/#home" />
           <NavigationButton label="Projeto" href="/#projeto" />
           <NavigationButton label="Baixe o App" href="/#baixe-o-app" />
@@ -97,7 +116,7 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
             )}
             <LightRoundButton
               onClick={handleLogout}
-              sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
             >
               <LogoutIcon sx={{ height: '1.1rem' }} />
               Sair
@@ -108,14 +127,14 @@ export const TopBar = ({ isRegister = false, isLogin = false }: TopBarProps) => 
             {/* Usuário não logado */}
             {!isLogin && (
               <Link href="/login" style={{ textDecoration: 'none' }}>
-                <LightRoundButton sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
+                <LightRoundButton sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                   Entrar
                 </LightRoundButton>
               </Link>
             )}
             {!isRegister && (
               <Link href="/register" style={{ textDecoration: 'none' }}>
-                <ColoredRoundButton sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
+                <ColoredRoundButton sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                   Cadastrar
                   <ArrowOutwardIcon sx={{ height: '1.1rem' }} />
                 </ColoredRoundButton>
