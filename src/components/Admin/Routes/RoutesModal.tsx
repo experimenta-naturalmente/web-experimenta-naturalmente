@@ -316,83 +316,78 @@ export const RoutesModal = ({ open, onClose, onSave, route }: RoutesModalProps) 
 
       <DialogContent>
         <Stack spacing={2}>
-          <Stack direction="row">
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Autocomplete
-                sx={{ fontSize: '0.9rem' }}
-                options={experienceOptions}
-                getOptionLabel={(option) => option.name}
-                value={selectedExperience || null}
-                onChange={(_e, newValue) => setSelectedExperience(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Experiência"
-                    sx={{ width: '300px', fontSize: '0.9rem' }}
-                  />
-                )}
-                isOptionEqualToValue={(option, value) => option.id === value.id} // 👈 importante
-              />
-              <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                onClick={addExperience}
-                disabled={!selectedExperience}
-              >
-                Adicionar
-              </Button>
+          <Stack display="flex" direction={{ xs: 'column', md: 'row' }} gap={2} alignItems="center">
+            <Autocomplete
+              sx={{ fontSize: '0.9rem' }}
+              options={experienceOptions}
+              getOptionLabel={(option) => option.name}
+              value={selectedExperience || null}
+              onChange={(_e, newValue) => setSelectedExperience(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Experiência"
+                  sx={{ width: '300px', fontSize: '0.9rem' }}
+                />
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id} // 👈 importante
+            />
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={addExperience}
+              disabled={!selectedExperience}
+            >
+              Adicionar
+            </Button>
 
-              <Stack>
-                <Typography
-                  variant="body2"
-                  color={theme.palette.neutrals.darkGrey}
-                  sx={{ mb: 1, fontWeight: 500 }}
-                >
-                  Início
-                </Typography>
-                <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
-                  {experienceList
-                    ?.sort((a, b) => a.order - b.order)
-                    .map((item, index) => (
-                      <ListItem
-                        sx={{ mr: '6.25rem' }}
-                        key={item.id}
-                        secondaryAction={
-                          <Box>
-                            <IconButton
-                              onClick={() => moveItem(index, 'up')}
-                              disabled={index === 0}
-                            >
-                              <ArrowUpward />
-                            </IconButton>
-                            <IconButton
-                              onClick={() => moveItem(index, 'down')}
-                              disabled={index === experienceList?.length - 1}
-                            >
-                              <ArrowDownward />
-                            </IconButton>
-                            <IconButton onClick={() => removeItem(item.id)}>
-                              <Delete />
-                            </IconButton>
-                          </Box>
-                        }
-                      >
-                        <ListItemText
-                          primary={item.name}
-                          sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
-                        />
-                      </ListItem>
-                    ))}
-                </List>
-                <Typography
-                  variant="body2"
-                  color={theme.palette.neutrals.darkGrey}
-                  sx={{ mb: 1, fontWeight: 500 }}
-                >
-                  Destino
-                </Typography>
-              </Stack>
-            </Box>
+            <Stack>
+              <Typography
+                variant="body2"
+                color={theme.palette.neutrals.darkGrey}
+                sx={{ mb: 1, fontWeight: 500 }}
+              >
+                Início
+              </Typography>
+              <List sx={{ border: '1px solid #ccc', borderRadius: 1 }}>
+                {experienceList
+                  ?.sort((a, b) => a.order - b.order)
+                  .map((item, index) => (
+                    <ListItem
+                      sx={{ mr: '6.25rem' }}
+                      key={item.id}
+                      secondaryAction={
+                        <Box>
+                          <IconButton onClick={() => moveItem(index, 'up')} disabled={index === 0}>
+                            <ArrowUpward />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => moveItem(index, 'down')}
+                            disabled={index === experienceList?.length - 1}
+                          >
+                            <ArrowDownward />
+                          </IconButton>
+                          <IconButton onClick={() => removeItem(item.id)}>
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      }
+                    >
+                      <ListItemText
+                        primary={item.name}
+                        sx={{ '.MuiTypography-root': { fontSize: '1.2rem' } }}
+                      />
+                    </ListItem>
+                  ))}
+              </List>
+              <Typography
+                variant="body2"
+                color={theme.palette.neutrals.darkGrey}
+                sx={{ mb: 1, fontWeight: 500 }}
+              >
+                Destino
+              </Typography>
+            </Stack>
           </Stack>
 
           <FormControl>
